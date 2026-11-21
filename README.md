@@ -18,6 +18,10 @@
   <strong>简体中文</strong> | <a href="README.en.md">English</a>
 </p>
 
+## Stronger path
+See [docs/STRONGER_VERSION.md](docs/STRONGER_VERSION.md) for the v0.0.27 stability + multi-model + memory roadmap while keeping Live2D quirks.
+
+
 <p align="center">
   <a href="#已实现功能">功能</a> | <a href="#尚未完成与已知边界">已知边界</a> | <a href="#agent-执行结构">执行结构</a> | <a href="#本地构建">本地构建</a> | <a href="#引用与致谢">致谢</a>
 </p>
