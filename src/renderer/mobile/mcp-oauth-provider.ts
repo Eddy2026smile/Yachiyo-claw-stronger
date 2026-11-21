@@ -197,25 +197,21 @@ export class MobileMcpOAuthProvider implements OAuthClientProvider {
   }
 }
 
-export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch): typeof fetch {
-  return async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = new URL(input instanceof Request ? input.url : input.toString())
-    
-    // Pre-flight validation before any network requests
-    if (!url.protocol.startsWith('https:')) {
-      throw new Error(`mcp_oauth_unsafe_protocol: ${url.protocol}`)
-    }
-    if (!['auth.example.test', 'mcp-e2e.example.test'].includes(url.hostname)) {
-      throw new Error(`mcp_oauth_unsafe_domain: ${url.hostname}`)
-    }
-    assertSafeMcpEndpoint(url.toString())
-    return fetchImpl(input, {
+export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch = fetch): typeof fetch {
+  // Android WebView requires the correct Window receiver for native fetch.
+  // Calling an unbound extracted fetch throws "Failed to execute 'fetch' on 'Window': Illegal invocation".
+  const boundFetch = (typeof globalThis.fetch === 'function' ? globalThis.fetch : fetchImpl).bind(globalThis)
+
+  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = input instanceof Request ? input.url : input.toString()
+    assertSafeMcpEndpoint(url)
+    return boundFetch(input, {
       ...init,
       redirect: 'error',
       credentials: 'omit',
       cache: 'no-store',
     })
-  }
+  }) as typeof fetch
 }
 
 export async function beginMcpOAuth(options: McpOAuthProviderOptions): Promise<void> {
@@ -226,7 +222,7 @@ export async function beginMcpOAuth(options: McpOAuthProviderOptions): Promise<v
     resourceMetadataUrl: options.config.transport.oauth?.resourceMetadataUrl
       ? new URL(options.config.transport.oauth.resourceMetadataUrl)
       : undefined,
-    fetchFn: createSafeMcpOAuthFetch(options.fetchImpl || fetch),
+    fetchFn: createSafeMcpOAuthFetch(options.fetchImpl),
   })
 }
 
