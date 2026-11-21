@@ -198,10 +198,14 @@ export class MobileMcpOAuthProvider implements OAuthClientProvider {
 }
 
 export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch = fetch): typeof fetch {
+  // Android WebView requires the correct Window receiver for native fetch.
+  // Calling an unbound extracted fetch throws "Failed to execute 'fetch' on 'Window': Illegal invocation".
+  const boundFetch = (typeof globalThis.fetch === 'function' ? globalThis.fetch : fetchImpl).bind(globalThis)
+
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = input instanceof Request ? input.url : input.toString()
     assertSafeMcpEndpoint(url)
-    return fetchImpl(input, {
+    return boundFetch(input, {
       ...init,
       redirect: 'error',
       credentials: 'omit',
