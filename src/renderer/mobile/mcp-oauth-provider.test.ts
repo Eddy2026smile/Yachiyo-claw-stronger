@@ -106,10 +106,7 @@ describe('MobileMcpOAuthProvider', () => {
       const url = new URL(input instanceof Request ? input.url : input.toString())
       
       // Mock valid responses for test URLs
-      if (url.hostname === 'mcp-e2e.example.test' && url.pathname === '/token') {
-        return new Response('{}', { status: 200 })
-      }
-      if (url.hostname === 'auth.example.test' && url.pathname === '/token') {
+      if (url.pathname === '/token') {
         return new Response('{}', { status: 200 })
       }
       
