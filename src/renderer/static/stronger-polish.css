@@ -161,6 +161,37 @@ html[data-yachiyo-appearance="flow-glass"] :focus-visible {
   outline-offset: 2px;
 }
 
+/* A quieter elevation stack and a crisp, warm keyline keep glass from feeling heavy. */
+html[data-yachiyo-appearance="flow-glass"] {
+  --flow-shadow-chrome: 0 10px 26px rgba(114, 55, 82, 0.1), 0 2px 6px rgba(114, 55, 82, 0.05);
+  --flow-shadow-control: 0 4px 14px rgba(114, 55, 82, 0.08), 0 1px 3px rgba(114, 55, 82, 0.04);
+  --flow-shadow-sheet: 0 -8px 28px rgba(94, 43, 69, 0.13), 0 1px 5px rgba(94, 43, 69, 0.05);
+  --flow-edge-mid: rgba(193, 103, 145, 0.32);
+}
+
+html[data-yachiyo-appearance="flow-glass"][data-theme="dark"] {
+  --flow-shadow-chrome: 0 12px 32px rgba(0, 0, 0, 0.34), 0 2px 7px rgba(0, 0, 0, 0.22);
+  --flow-shadow-control: 0 5px 16px rgba(0, 0, 0, 0.27), 0 1px 4px rgba(0, 0, 0, 0.18);
+  --flow-shadow-sheet: 0 -9px 34px rgba(0, 0, 0, 0.4), 0 1px 6px rgba(0, 0, 0, 0.28);
+  --flow-edge-mid: rgba(255, 163, 202, 0.26);
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-conversation-tools,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-agent-header-controls,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-bottom-nav-grid,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-chat-composer-surface,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-task-composer-panel,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-settings-list,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-settings-panel,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-status-panel,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-theme-card,
+html[data-yachiyo-appearance="flow-glass"] .local-model-results,
+html[data-yachiyo-appearance="flow-glass"] .local-model-summary-grid,
+html[data-yachiyo-appearance="flow-glass"] .local-model-device-metrics,
+html[data-yachiyo-appearance="flow-glass"] .local-model-metadata {
+  border-color: var(--flow-edge-mid);
+}
+
 @media (max-width: 380px) {
   html[data-yachiyo-appearance="flow-glass"] {
     --flow-header-height: calc(66px + var(--mobile-safe-area-inset-top, 0px));
@@ -170,6 +201,38 @@ html[data-yachiyo-appearance="flow-glass"] :focus-visible {
     padding-right: calc(8px + var(--mobile-safe-area-inset-right, 0px));
     padding-left: calc(8px + var(--mobile-safe-area-inset-left, 0px));
     gap: 6px;
+  }
+
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header .mantine-ActionIcon-root,
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-interactive-header .mantine-ActionIcon-root,
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header-collapse {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+  }
+
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-chat-composer-dock,
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-task-composer {
+    padding-right: calc(8px + var(--mobile-safe-area-inset-right, 0px));
+    padding-left: calc(8px + var(--mobile-safe-area-inset-left, 0px));
+  }
+
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-composer-row {
+    gap: 5px;
+  }
+
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-chat-composer-surface .mantine-Textarea-input,
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-chat-composer-surface .mantine-Input-input {
+    min-height: 42px;
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 15px;
+  }
+
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-chat-composer-surface .mantine-ActionIcon-root {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
 

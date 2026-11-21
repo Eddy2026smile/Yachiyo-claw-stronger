@@ -16,6 +16,11 @@ describe('message error explanations', () => {
     expect(explainRequestError('local_model_not_litertlm')).toContain('.litertlm')
   })
 
+  it('suggests a safe retry for otherwise-unclassified local model load failures', () => {
+    expect(explainRequestError('local_model_load_failed')).toContain('卸载模型')
+    expect(explainRequestError('local_inference_failed')).toContain('切换为 CPU')
+  })
+
   it('parses status metadata and common error strings', () => {
     expect(parseHttpStatus('API Error: Status Code 503')).toBe(503)
     expect(parseHttpStatus('HTTP 429', '401')).toBe(401)

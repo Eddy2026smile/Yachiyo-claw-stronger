@@ -26,6 +26,7 @@ const LOCAL_MODEL_EXPLANATIONS: Array<[RegExp, string]> = [
   [/local_model_chat_template/, '本地模型的聊天模板暂不受支持。请换用带标准 ChatML/Gemma 模板的 GGUF。'],
   [/local_inference_process_crashed/, '本地推理进程异常退出。已尝试可用的安全后备配置；请尝试更小的模型或量化版本，并将运行后端设为 CPU。'],
   [/local_inference_(?:start_)?timeout|local_inference_timeout/, '本地模型启动或响应超时。首次加载较大的模型可能需要更久；请稍后重试，或使用更小的模型。'],
+  [/local_model_load_failed|local_inference_failed/, '本地模型加载失败。请先卸载模型、确认下载完整后重试；若仍失败，请在本地模型设置中切换为 CPU，或尝试更小的模型。'],
 ]
 
 export function explainRequestError(error: string, responseBody = '', status?: number): string {
@@ -41,7 +42,7 @@ export function explainRequestError(error: string, responseBody = '', status?: n
     return '对话已超过模型上下文上限。请压缩上下文、减少附件或新建对话。'
   }
   if (/certificate|ssl|tls|handshake/.test(value)) {
-    return 'TLS 安全连接失败。请检查系统时间���证书、代理和 API 地址。'
+    return 'TLS 安全连接失败。请检查系统时间、证书、代理和 API 地址。'
   }
   const localModelExplanation = LOCAL_MODEL_EXPLANATIONS.find(([pattern]) => pattern.test(value))
   if (localModelExplanation) return localModelExplanation[1]
