@@ -13,8 +13,7 @@ object GgufRunner {
   @JvmStatic
   @Synchronized
   fun load(modelPath: String, requestId: String, eager: Boolean, gpuLayers: Int, cpuThreads: Int) {
-    require(File(modelPath).isFile) { "local_model_file_missing" }
-    require(LocalModelFormat.isRunnableGgufPath(modelPath)) { "local_model_not_gguf" }
+    validateModelFile(modelPath)
     nativeLoad(modelPath, requestId, eager, gpuLayers.coerceAtLeast(0), cpuThreads.coerceAtLeast(1))
   }
 
@@ -38,8 +37,7 @@ object GgufRunner {
     cpuThreads: Int,
     streamPath: String? = null,
   ): String {
-    require(File(modelPath).isFile) { "local_model_file_missing" }
-    require(LocalModelFormat.isRunnableGgufPath(modelPath)) { "local_model_not_gguf" }
+    validateModelFile(modelPath)
 
     val roles = mutableListOf<String>()
     val contents = mutableListOf<String>()
@@ -61,6 +59,11 @@ object GgufRunner {
       cpuThreads.coerceAtLeast(1),
       streamPath,
     )
+  }
+
+  private fun validateModelFile(modelPath: String) {
+    val error = LocalModelFormat.ggufValidationError(File(modelPath))
+    require(error == null) { error ?: "local_model_not_gguf" }
   }
 
   @JvmStatic

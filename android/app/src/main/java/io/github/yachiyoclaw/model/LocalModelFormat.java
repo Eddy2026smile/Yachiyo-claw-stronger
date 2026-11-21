@@ -34,6 +34,15 @@ final class LocalModelFormat {
         return !GGUF_SHARD.matcher(fileName).matches() || GGUF_FIRST_SHARD.matcher(fileName).matches();
     }
 
+    /** Returns a stable, user-displayable validation error before untrusted bytes reach native parsing. */
+    static String ggufValidationError(File file) {
+        if (file == null || !file.isFile()) return "local_model_file_missing";
+        if (!isRunnableGgufPath(file.getPath())) return "local_model_not_gguf";
+        if (!hasCompleteGgufShardSet(file)) return "local_model_gguf_shards_incomplete";
+        if (!hasValidGgufHeader(file)) return "local_model_gguf_invalid";
+        return null;
+    }
+
     static String chooseRuntimePath(String current, String format, File output) {
         String path = output.getAbsolutePath();
         if (isLiteRtLm(format, path) || isTflite(format, path) || isRunnableGgufPath(path)) return path;

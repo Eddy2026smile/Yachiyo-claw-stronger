@@ -1,0 +1,185 @@
+/* Stronger visual finish for Yachiyo's existing Liquid Glass appearance.
+   Keep this file appearance-scoped: the classic theme and Live2D stage remain untouched. */
+
+html[data-yachiyo-appearance="flow-glass"] {
+  --flow-blue: #d84f8b;
+  --flow-nav-active-label: #9c315f;
+  --flow-green: #318b68;
+  --flow-orange: #b96c2d;
+  --flow-red: #c83c68;
+  --flow-chrome-fill: rgba(255, 249, 252, 0.62);
+  --flow-control-fill: rgba(255, 255, 255, 0.58);
+  --flow-popover-fill: rgba(255, 250, 253, 0.86);
+  --flow-sheet-fill: rgba(255, 249, 252, 0.9);
+  --flow-group-fill: rgba(255, 252, 254, 0.82);
+  --flow-content-fill: rgba(255, 253, 255, 0.94);
+  --flow-field-fill: rgba(255, 255, 255, 0.88);
+  --flow-edge-light: rgba(255, 255, 255, 0.94);
+  --flow-edge-mid: rgba(206, 117, 157, 0.27);
+  --flow-edge-dark: rgba(105, 45, 73, 0.12);
+  --flow-shadow-chrome: 0 16px 38px rgba(114, 55, 82, 0.13), 0 3px 10px rgba(114, 55, 82, 0.07);
+  --flow-shadow-control: 0 7px 20px rgba(114, 55, 82, 0.1), 0 2px 5px rgba(114, 55, 82, 0.05);
+  --flow-shadow-sheet: 0 -10px 40px rgba(94, 43, 69, 0.16), 0 2px 10px rgba(94, 43, 69, 0.07);
+  --flow-text: #30232c;
+  --flow-text-secondary: #695663;
+  --flow-divider: rgba(139, 77, 106, 0.15);
+  --flow-env-color: #fff7fb;
+  --flow-env-glow:
+    radial-gradient(120% 58% at 0% 0%, rgba(255, 159, 196, 0.24), transparent 62%),
+    radial-gradient(90% 50% at 100% 8%, rgba(194, 171, 255, 0.17), transparent 64%),
+    radial-gradient(110% 58% at 0% 100%, rgba(255, 211, 224, 0.2), transparent 62%),
+    radial-gradient(90% 50% at 100% 100%, rgba(255, 183, 199, 0.13), transparent 62%);
+  --flow-env-settings-color: #fff9fc;
+  --flow-env-settings-glow:
+    radial-gradient(120% 50% at 0% 0%, rgba(255, 159, 196, 0.16), transparent 60%),
+    radial-gradient(90% 45% at 100% 100%, rgba(194, 171, 255, 0.11), transparent 60%);
+}
+
+html[data-yachiyo-appearance="flow-glass"][data-theme="dark"] {
+  --flow-blue: #ff83b5;
+  --flow-nav-active-label: #ffacd0;
+  --flow-green: #62d6a0;
+  --flow-orange: #ffb36b;
+  --flow-red: #ff789f;
+  --flow-chrome-fill: rgba(38, 27, 38, 0.72);
+  --flow-control-fill: rgba(54, 37, 53, 0.68);
+  --flow-popover-fill: rgba(39, 27, 39, 0.9);
+  --flow-sheet-fill: rgba(34, 24, 35, 0.92);
+  --flow-group-fill: rgba(43, 31, 43, 0.84);
+  --flow-content-fill: rgba(35, 27, 37, 0.94);
+  --flow-field-fill: rgba(255, 255, 255, 0.08);
+  --flow-edge-light: rgba(255, 225, 239, 0.2);
+  --flow-edge-mid: rgba(255, 163, 202, 0.2);
+  --flow-edge-dark: rgba(0, 0, 0, 0.42);
+  --flow-shadow-chrome: 0 18px 48px rgba(0, 0, 0, 0.4), 0 3px 12px rgba(0, 0, 0, 0.3);
+  --flow-shadow-control: 0 8px 24px rgba(0, 0, 0, 0.32), 0 2px 6px rgba(0, 0, 0, 0.24);
+  --flow-shadow-sheet: 0 -12px 50px rgba(0, 0, 0, 0.48), 0 2px 12px rgba(0, 0, 0, 0.34);
+  --flow-text: #fff4f8;
+  --flow-text-secondary: #d6bdca;
+  --flow-divider: rgba(255, 220, 237, 0.13);
+  --flow-env-color: #17121a;
+  --flow-env-glow:
+    radial-gradient(120% 58% at 0% 0%, rgba(196, 70, 127, 0.2), transparent 62%),
+    radial-gradient(90% 50% at 100% 8%, rgba(130, 93, 196, 0.17), transparent 64%),
+    radial-gradient(110% 58% at 0% 100%, rgba(118, 47, 86, 0.15), transparent 62%),
+    radial-gradient(90% 50% at 100% 100%, rgba(198, 71, 121, 0.1), transparent 62%);
+  --flow-env-settings-color: #151119;
+  --flow-env-settings-glow:
+    radial-gradient(120% 50% at 0% 0%, rgba(196, 70, 127, 0.13), transparent 60%),
+    radial-gradient(90% 45% at 100% 100%, rgba(130, 93, 196, 0.1), transparent 60%);
+}
+
+html[data-yachiyo-appearance="flow-glass"] body,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-shell {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  letter-spacing: -0.012em;
+  text-rendering: optimizeLegibility;
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-title strong {
+  letter-spacing: -0.025em;
+  font-weight: 720;
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-settings-list,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-settings-panel,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-status-panel,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-theme-card,
+html[data-yachiyo-appearance="flow-glass"] .local-model-results,
+html[data-yachiyo-appearance="flow-glass"] .local-model-summary-grid,
+html[data-yachiyo-appearance="flow-glass"] .local-model-device-metrics,
+html[data-yachiyo-appearance="flow-glass"] .local-model-metadata {
+  border-color: var(--flow-divider);
+  box-shadow: inset 0 1px 0 var(--flow-edge-light), 0 10px 28px rgba(114, 55, 82, 0.075);
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header .mantine-ActionIcon-root,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-interactive-header .mantine-ActionIcon-root,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header-collapse {
+  border-color: var(--flow-edge-mid);
+  transition: transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header .mantine-ActionIcon-root:active,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-interactive-header .mantine-ActionIcon-root:active,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header-collapse:active {
+  transform: scale(0.96);
+  background-color: color-mix(in srgb, var(--flow-blue) 12%, var(--flow-control-fill));
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-bottom-nav-grid {
+  border-color: var(--flow-edge-mid);
+  box-shadow: inset 0 1px 0 var(--flow-edge-light), inset 0 -1px 0 var(--flow-edge-dark), var(--flow-shadow-chrome);
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-bottom-nav-lens-inner {
+  border-color: color-mix(in srgb, var(--flow-blue) 26%, white);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.76), color-mix(in srgb, var(--flow-blue) 18%, transparent) 58%, rgba(194, 171, 255, 0.12)),
+    color-mix(in srgb, var(--flow-blue) 6%, var(--flow-control-fill));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.94), inset 0 -1px 0 var(--flow-edge-dark), 0 5px 18px rgba(156, 49, 95, 0.14);
+}
+
+html[data-yachiyo-appearance="flow-glass"][data-theme="dark"] .yachiyo-bottom-nav-lens-inner {
+  border-color: rgba(255, 163, 202, 0.25);
+  background: linear-gradient(145deg, rgba(255, 225, 239, 0.15), rgba(216, 79, 139, 0.2) 58%, rgba(160, 124, 226, 0.12)),
+    rgba(54, 37, 53, 0.58);
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-chat-composer-surface:focus-within {
+  border-color: color-mix(in srgb, var(--flow-blue) 48%, var(--flow-edge-mid)) !important;
+  box-shadow: inset 0 1px 0 var(--flow-edge-light), 0 0 0 3px color-mix(in srgb, var(--flow-blue) 12%, transparent), var(--flow-shadow-chrome) !important;
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-composer-row .yachiyo-composer-primary {
+  border-color: color-mix(in srgb, var(--flow-blue) 45%, transparent);
+  background: linear-gradient(145deg, #ed72a5, #cf397b);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34), 0 5px 14px rgba(156, 49, 95, 0.25);
+}
+
+html[data-yachiyo-appearance="flow-glass"] .bubble-user-msg .inline-block.max-w-full,
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-agent-user-message {
+  border-color: color-mix(in srgb, var(--flow-blue) 25%, var(--flow-divider));
+  background: color-mix(in srgb, var(--flow-blue) 9%, rgba(255, 255, 255, 0.78)) !important;
+}
+
+html[data-yachiyo-appearance="flow-glass"][data-theme="dark"] .bubble-user-msg .inline-block.max-w-full,
+html[data-yachiyo-appearance="flow-glass"][data-theme="dark"] .yachiyo-agent-user-message {
+  background: color-mix(in srgb, var(--flow-blue) 15%, rgba(35, 27, 37, 0.92)) !important;
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-settings-item {
+  min-height: 72px;
+  transition: background-color 150ms ease;
+}
+
+html[data-yachiyo-appearance="flow-glass"] .yachiyo-settings-item:active {
+  background: color-mix(in srgb, var(--flow-blue) 9%, transparent);
+}
+
+html[data-yachiyo-appearance="flow-glass"] :focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--flow-blue) 74%, white);
+  outline-offset: 2px;
+}
+
+@media (max-width: 380px) {
+  html[data-yachiyo-appearance="flow-glass"] {
+    --flow-header-height: calc(66px + var(--mobile-safe-area-inset-top, 0px));
+  }
+
+  html[data-yachiyo-appearance="flow-glass"] .yachiyo-mobile-header-primary {
+    padding-right: calc(8px + var(--mobile-safe-area-inset-right, 0px));
+    padding-left: calc(8px + var(--mobile-safe-area-inset-left, 0px));
+    gap: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-yachiyo-appearance="flow-glass"] *,
+  html[data-yachiyo-appearance="flow-glass"] *::before,
+  html[data-yachiyo-appearance="flow-glass"] *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

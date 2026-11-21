@@ -2,6 +2,7 @@ package io.github.yachiyoclaw.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -44,6 +45,8 @@ public final class LocalModelFormatTest {
             }
             assertTrue(LocalModelFormat.hasValidGgufHeader(valid));
             assertFalse(LocalModelFormat.hasValidGgufHeader(invalid));
+            assertNull(LocalModelFormat.ggufValidationError(valid));
+            assertEquals("local_model_gguf_invalid", LocalModelFormat.ggufValidationError(invalid));
         } finally {
             valid.delete();
             invalid.delete();
@@ -51,15 +54,19 @@ public final class LocalModelFormatTest {
     }
 
     @Test
-    public void requiresEveryShardBesideTheFirstShard() throws Exception {
+    public void reportsMissingModelFilesAndIncompleteShardSets() throws Exception {
         File directory = java.nio.file.Files.createTempDirectory("yachiyo-shards").toFile();
         File first = new File(directory, "gemma-00001-of-00002.gguf");
         File second = new File(directory, "gemma-00002-of-00002.gguf");
         try {
-            assertTrue(first.createNewFile());
-            assertFalse(LocalModelFormat.hasCompleteGgufShardSet(first));
+            assertEquals("local_model_file_missing", LocalModelFormat.ggufValidationError(new File(directory, "missing.gguf")));
+            try (FileOutputStream output = new FileOutputStream(first)) {
+                output.write(new byte[] { 'G', 'G', 'U', 'F', 3, 0, 0, 0 });
+            }
+            assertEquals("local_model_gguf_shards_incomplete", LocalModelFormat.ggufValidationError(first));
             assertTrue(second.createNewFile());
             assertTrue(LocalModelFormat.hasCompleteGgufShardSet(first));
+            assertNull(LocalModelFormat.ggufValidationError(first));
         } finally {
             first.delete();
             second.delete();
