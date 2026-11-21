@@ -106,11 +106,10 @@ describe('MobileMcpOAuthProvider', () => {
       const url = new URL(input instanceof Request ? input.url : input.toString())
       
       // Mock valid responses for test URLs
-      if (url.hostname === 'auth.example.test' && url.pathname === '/token') {
+      if (url.hostname === 'mcp-e2e.example.test' && url.pathname === '/token') {
         return new Response('{}', { status: 200 })
       }
       
-      // This should never be reached since createSafeMcpOAuthFetch should reject first
       throw new Error(`Unexpected network request to ${url}`)
     })
     const safeFetch = createSafeMcpOAuthFetch(fetchImpl as typeof fetch)
