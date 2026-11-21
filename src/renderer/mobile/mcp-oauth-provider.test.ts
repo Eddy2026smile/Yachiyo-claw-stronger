@@ -101,9 +101,13 @@ describe('MobileMcpOAuthProvider', () => {
   })
 
   it('blocks unsafe OAuth fetch endpoints and disables redirects', async () => {
-    const fetchImpl = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+    const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       expect(init).toMatchObject({ redirect: 'error', credentials: 'omit', cache: 'no-store' })
-      return new Response('{}')
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url.includes('example.test')) {
+        return new Response('{}', { status: 200 })
+      }
+      throw new Error(`Unexpected network request to ${url}`)
     })
     const safeFetch = createSafeMcpOAuthFetch(fetchImpl as typeof fetch)
     
