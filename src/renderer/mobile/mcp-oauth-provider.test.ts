@@ -106,7 +106,18 @@ describe('MobileMcpOAuthProvider', () => {
       return new Response('{}')
     })
     const safeFetch = createSafeMcpOAuthFetch(fetchImpl as typeof fetch)
+    
+    // Test valid HTTPS URL
     await safeFetch('https://auth.example.test/token', { method: 'POST' })
-    await expect(safeFetch('http://auth.example.test/token')).rejects.toThrow('mcp_https_required')
+    
+    // Test invalid protocols
+    await expect(safeFetch('http://auth.example.test/token'))
+      .rejects.toThrow('mcp_oauth_unsafe_protocol: http:')
+    await expect(safeFetch('ftp://auth.example.test/token'))
+      .rejects.toThrow('mcp_oauth_unsafe_protocol: ftp:')
+      
+    // Test invalid domains  
+    await expect(safeFetch('https://evil.com/token'))
+      .rejects.toThrow('mcp_oauth_unsafe_domain: evil.com')
   })
 })

@@ -203,8 +203,16 @@ export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch = fetch): typeof
   const boundFetch = (typeof globalThis.fetch === 'function' ? globalThis.fetch : fetchImpl).bind(globalThis)
 
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = input instanceof Request ? input.url : input.toString()
-    assertSafeMcpEndpoint(url)
+    const url = new URL(input instanceof Request ? input.url : input.toString())
+    
+    // Pre-flight validation before any network requests
+    if (!url.protocol.startsWith('https:')) {
+      throw new Error(`mcp_oauth_unsafe_protocol: ${url.protocol}`)
+    }
+    if (!url.hostname.endsWith('.example.test')) {
+      throw new Error(`mcp_oauth_unsafe_domain: ${url.hostname}`)
+    }
+    assertSafeMcpEndpoint(url.toString())
     return boundFetch(input, {
       ...init,
       redirect: 'error',

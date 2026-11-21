@@ -1,7 +1,7 @@
 /** In-memory OAuth 2.1 + MCP service used only by automated tests. */
 export class TemporaryMcpOAuthTestService {
-  readonly resource = 'https://mcp-e2e.example.test/mcp'
-  readonly resourceMetadata = 'https://mcp-e2e.example.test/.well-known/oauth-protected-resource'
+  readonly resource = 'https://oauth-e2e.example.test/mcp'
+  readonly resourceMetadata = 'https://oauth-e2e.example.test/.well-known/oauth-protected-resource'
   readonly issuer = 'https://oauth-e2e.example.test'
   readonly authorizationEndpoint = `${this.issuer}/authorize`
   readonly tokenEndpoint = `${this.issuer}/token`
