@@ -209,7 +209,7 @@ export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch = fetch): typeof
     if (!url.protocol.startsWith('https:')) {
       throw new Error(`mcp_oauth_unsafe_protocol: ${url.protocol}`)
     }
-    if (!url.hostname.endsWith('.example.test')) {
+    if (!['auth.example.test', 'mcp-e2e.example.test'].includes(url.hostname)) {
       throw new Error(`mcp_oauth_unsafe_domain: ${url.hostname}`)
     }
     assertSafeMcpEndpoint(url.toString())
