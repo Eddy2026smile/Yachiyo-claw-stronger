@@ -35,3 +35,4 @@ android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 For device testing, install with `adb install -r` and launch `io.github.yachiyoclaw`. A successful host build does not by itself verify visual behavior, Live2D rendering, or device-specific local-model performance; check those on a device/emulator separately. See [BUILDING.md](BUILDING.md) for toolchain details and workspace policy.
+
