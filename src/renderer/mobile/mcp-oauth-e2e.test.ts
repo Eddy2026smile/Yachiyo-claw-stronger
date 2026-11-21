@@ -68,7 +68,7 @@ describe('mobile MCP OAuth end-to-end', () => {
     expect(authorizationUrl.origin + authorizationUrl.pathname).toBe('https://mcp-e2e.example.test/authorize')
     expect(authorizationUrl.searchParams.get('code_challenge_method')).toBe('S256')
     expect(authorizationUrl.searchParams.get('code_challenge')).toMatch(/^[A-Za-z0-9_-]{43}$/)
-    expect(authorizationUrl.searchParams.get('resource')).toBe(service.resource)
+    expect(authorizationUrl.searchParams.get('resource')).toBe(service.resourceMetadata)
 
     const callbackUrl = await service.authorize(openedUrls[0])
     now = 2_000
