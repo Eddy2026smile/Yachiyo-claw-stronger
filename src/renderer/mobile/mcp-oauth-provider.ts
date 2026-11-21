@@ -209,13 +209,13 @@ export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch): typeof fetch {
       throw new Error(`mcp_oauth_unsafe_domain: ${url.hostname}`)
     }
     assertSafeMcpEndpoint(url.toString())
-    return boundFetch(input, {
+    return fetchImpl(input, {
       ...init,
       redirect: 'error',
       credentials: 'omit',
       cache: 'no-store',
     })
-  }) as typeof fetch
+  }
 }
 
 export async function beginMcpOAuth(options: McpOAuthProviderOptions): Promise<void> {
