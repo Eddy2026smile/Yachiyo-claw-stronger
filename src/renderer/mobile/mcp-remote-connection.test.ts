@@ -8,10 +8,11 @@ import {
 process.env.NODE_ENV = 'test'
 
 describe('Remote MCP Connection', () => {
-  const SecureStorage = MockSecureStorage
+  let storage: InstanceType<typeof MockSecureStorage>
+  
   beforeEach(async () => {
-    // Clear storage between tests
-    const storage = new SecureStorage('mcp_remote_connection')
+    // Create new mock storage instance
+    storage = new MockSecureStorage()
     await storage.clear()
   })
 

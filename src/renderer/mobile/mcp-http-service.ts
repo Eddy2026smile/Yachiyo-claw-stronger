@@ -35,6 +35,9 @@ class MockSecureStorage {
   }
 }
 
+// Keep this export for tests
+export { MockSecureStorage }
+
 const SecureStorage = process.env.NODE_ENV === 'test'
   ? MockSecureStorage
   : (await import('../platform/storages.mobile-secure')).SecureStorage
