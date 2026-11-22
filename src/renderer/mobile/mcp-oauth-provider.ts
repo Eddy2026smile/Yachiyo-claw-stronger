@@ -270,7 +270,7 @@ export async function finishMcpOAuth(
     resourceMetadataUrl: options.config.transport.oauth?.resourceMetadataUrl
       ? new URL(options.config.transport.oauth.resourceMetadataUrl)
       : undefined,
-    fetchFn: createSafeMcpOAuthFetch(options.fetchImpl),
+    fetchFn: createSafeMcpOAuthFetch(options.fetchImpl ?? fetch),
   })
   await provider.invalidateCredentials('verifier')
 }
