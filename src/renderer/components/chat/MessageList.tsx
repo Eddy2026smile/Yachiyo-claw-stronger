@@ -499,7 +499,7 @@ const MessageList = forwardRef<MessageListRef, MessageListProps>((props, ref) =>
             data={renderItems}
             ref={virtuoso}
             followOutput={inAndroidAppShell ? 'auto' : 'smooth'}
-            components={inAndroidAppShell ? androidMessageListComponents : undefined}
+            components={inAndroidAppShell ? androidMessageListComponents : {}}
             {...(sessionScrollPositionCache.has(currentSession.id)
               ? {
                   restoreStateFrom: sessionScrollPositionCache.get(currentSession.id),
