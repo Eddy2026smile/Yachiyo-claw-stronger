@@ -276,48 +276,51 @@ export const SkillsSection: FC = () => {
   }, [])
 
   const parseGitHubRepo = useCallback((url: string): { owner: string; repo: string } | null => {
+    const trimmed = url.trim()
+    if (!trimmed) return null
+    
+    // Early return for GitHub homepage
+    if (trimmed === 'https://github.com' || 
+        trimmed === 'https://github.com/' ||
+        trimmed === 'github.com' ||
+        trimmed === 'github.com/') {
+      return null
+    }
+
     try {
-      const trimmed = url.trim()
-      if (!trimmed) return null
-      
-      // Handle GitHub homepage case
-      if (trimmed === 'https://github.com' || trimmed === 'https://github.com/') {
-        return null
+      // Normalize URL - ensure it has https:// protocol
+      let normalizedUrl = trimmed
+      if (!normalizedUrl.startsWith('http')) {
+        normalizedUrl = `https://${normalizedUrl}`
       }
 
       // Handle raw.githubusercontent.com URLs
-      if (trimmed.includes('raw.githubusercontent.com')) {
-        const parts = trimmed.split('/')
-        if (parts.length < 5) return null
-        return { owner: parts[3], repo: parts[4] }
+      if (normalizedUrl.includes('raw.githubusercontent.com')) {
+        const parsed = new URL(normalizedUrl)
+        const pathParts = parsed.pathname.split('/').filter(Boolean)
+        if (pathParts.length < 2) return null
+        return { owner: pathParts[0], repo: pathParts[1] }
       }
 
       // Handle github.com URLs
-      if (trimmed.includes('github.com')) {
-        // Ensure URL has protocol
-        const normalizedUrl = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`
-        const parsed = new URL(normalizedUrl)
-        
-        // Simple path parsing without regex
-        const path = parsed.pathname
-        const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path
-        const pathParts = cleanPath.split('/').filter(Boolean)
-        
-        if (pathParts.length < 2) return null
-        
-        let repo = pathParts[1]
-        // Remove .git suffix if present
-        if (repo.endsWith('.git')) {
-          repo = repo.slice(0, -4)
-        }
-        
-        return { 
-          owner: pathParts[0], 
-          repo
-        }
+      const parsed = new URL(normalizedUrl)
+      if (!parsed.hostname.includes('github.com')) {
+        return null
       }
 
-      return null
+      const pathParts = parsed.pathname.split('/').filter(Boolean)
+      if (pathParts.length < 2) return null
+
+      // Get owner and repo names
+      const owner = pathParts[0]
+      let repo = pathParts[1]
+      
+      // Clean up repo name
+      repo = repo.replace(/\.git$/i, '') // Remove .git suffix
+      repo = repo.split('#')[0] // Remove any # fragments
+      repo = repo.split('?')[0] // Remove any query params
+
+      return { owner, repo }
     } catch (error) {
       console.error('Failed to parse GitHub URL:', error)
       return null
@@ -327,7 +330,7 @@ export const SkillsSection: FC = () => {
   const handleScanRepo = useCallback(async () => {
     const parsed = parseGitHubRepo(githubUrl)
     if (!parsed) {
-      toastError(t('Please enter a valid GitHub repository URL'))
+      toastError(t('Please enter a valid GitHub repository URL in format: https://github.com/owner/repo'))
       return
     }
 
@@ -339,16 +342,28 @@ export const SkillsSection: FC = () => {
         discovered = await skillsController.scanRepo(parsed.owner, parsed.repo)
       } else {
         // On web/desktop, use proxy endpoint to avoid CORS
-        const response = await fetch(`/proxy/github/repos/${parsed.owner}/${parsed.repo}/contents?recursive=1`)
-        if (!response.ok) throw new Error(`GitHub API ${response.status}`)
+        const response = await fetch(`/proxy/github.com/repos/${parsed.owner}/${parsed.repo}/contents?recursive=1`)
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error(t('Repository not found. Please check the URL and permissions.'))
+          }
+          throw new Error(`GitHub API ${response.status}`)
+        }
         
         const contents = await response.json()
+        if (!Array.isArray(contents)) {
+          throw new Error(t('Unexpected response from GitHub API'))
+        }
+
         discovered = contents
           .filter((file: any) => {
             if (file.type !== 'file') return false
-            // Simple case-insensitive check for SKILL.md
+            // Case-insensitive check for SKILL.md in path
             const path = file.path.toLowerCase()
-            return path.endsWith('skill.md') || path.includes('/skill.md')
+            return path.endsWith('skill.md') || 
+                   path.includes('/skill.md') ||
+                   path.endsWith('skill.json') ||
+                   path.includes('/skill.json')
           })
           .map((file: any) => {
             const pathParts = file.path.split('/')
@@ -357,7 +372,7 @@ export const SkillsSection: FC = () => {
               name: dirName,
               path: file.path,
               downloadUrl: file.download_url,
-              description: 'GitHub Skill',
+              description: t('GitHub Skill'),
               repo: `${parsed.owner}/${parsed.repo}`
             }
           })
@@ -378,13 +393,18 @@ export const SkillsSection: FC = () => {
       if (error instanceof Error) {
         if (error.message.includes('rate limit')) {
           errorMsg = t('GitHub rate limit exceeded. Please try again later.')
-        } else if (error.message.includes('Not Found')) {
+        } else if (error.message.includes('Not Found') || error.message.includes('404')) {
           errorMsg = t('Repository not found. Please check the URL and permissions.')
+        } else if (error.message.includes('API rate limit')) {
+          errorMsg = t('GitHub API rate limit exceeded. Please try again later.')
         } else {
-          errorMsg = error.message
+          errorMsg = `${t('Error scanning repository')}: ${error.message}`
         }
       }
-      toastError(errorMsg)
+      toastError(errorMsg, {
+        duration: 5000,
+        description: t('Please check the URL format: https://github.com/owner/repo')
+      })
     } finally {
       setScanning(false)
     }
