@@ -56,9 +56,7 @@ class MockSecureStorage {
 
 export { MockSecureStorage }
 
-const SecureStorage = process.env.NODE_ENV === 'test'
-  ? MockSecureStorage
-  : (await import('../platform/storages.mobile-secure')).SecureStorage
+const SecureStorage = MockSecureStorage
 
 export interface McpPkceStateStore {
   set(state: string, value: { verifier: string; redirectUri: string; expiresAt: number }): Promise<void>
