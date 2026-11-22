@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'io.github.yachiyoclaw',
-  appName: 'Yachiyo Claw',
+  appId: 'io.github.yachiyoclaw.stronger',
+  appName: 'Yachiyo Claw Stronger',
   webDir: 'dist/renderer',
   server: {
     androidScheme: 'https',

@@ -20,7 +20,7 @@ env:
   PNPM_VERSION: '10.33.0'
   JDK_VERSION: '21.0.11+10'
   ANDROID_COMMAND_LINE_TOOLS_BUILD: '15859902'
-  ANDROID_APPLICATION_ID: io.github.yachiyoclaw
+  ANDROID_APPLICATION_ID: io.github.yachiyoclaw.stronger
   PNPM_STORE_DIR: ${{ github.workspace }}/.cache/ci-pnpm-store
   GRADLE_USER_HOME: ${{ github.workspace }}/.cache/ci-gradle
 

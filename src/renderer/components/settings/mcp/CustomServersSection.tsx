@@ -1,5 +1,5 @@
 import { useSettingsConfirmation } from '@/components/settings/useSettingsConfirmation'
-import { ActionIcon, Anchor, Badge, Flex, Paper, SimpleGrid, Switch, Text } from '@mantine/core'
+import { ActionIcon, Anchor, Badge, Button, Flex, Group, Modal, Paper, SimpleGrid, Switch, Text, Textarea } from '@mantine/core'
 import { spotlight } from '@mantine/spotlight'
 import { IconPlus } from '@tabler/icons-react'
 import { type FC, useCallback, useEffect, useState } from 'react'
@@ -123,20 +123,38 @@ const CustomServersSection: FC<Props> = (props) => {
     }
   }, [])
 
-  const triggerImportJson = async () => {
-    const content = await navigator.clipboard.readText()
+  const [pasteModalOpen, setPasteModalOpen] = useState(false)
+  const [pasteText, setPasteText] = useState('')
+
+  const applyImportedText = (content: string): boolean => {
     const servers = parseServersFromJson(content)
     trackEvent('import_mcp_servers_from_json', { count: servers.length })
     if (!servers.length) {
-      toastError(t('No MCP servers parsed from clipboard'))
-      return
+      return false
     }
     setSettings((draft) => {
       draft.mcp.servers.push(...servers)
     })
+    for (const server of servers) {
+      mcpController.updateServer(server)
+    }
     toast.success(
       t('{{count}} MCP servers imported', { count: servers.length }) + ': ' + servers.map((s) => s.name).join(', ')
     )
+    return true
+  }
+
+  const triggerImportJson = async () => {
+    try {
+      const content = await navigator.clipboard?.readText()
+      if (content && applyImportedText(content)) {
+        return
+      }
+    } catch {
+      // Android WebView often blocks programmatic clipboard read; fall back to manual paste modal
+    }
+    setPasteText('')
+    setPasteModalOpen(true)
   }
 
   return (
@@ -183,6 +201,36 @@ const CustomServersSection: FC<Props> = (props) => {
         onSave={handleServerUpdate}
         onDelete={handleServerDelete}
       />
+      <Modal
+        opened={pasteModalOpen}
+        onClose={() => setPasteModalOpen(false)}
+        title={t('Import from JSON in clipboard')}
+        centered
+      >
+        <Textarea
+          minRows={5}
+          autosize
+          placeholder={'Paste MCP JSON ({"mcpServers": ...} or {"url": "..."}) or Desktop Brain string (http://100.x.y.z:8080/mcp | Bearer ...)'}
+          value={pasteText}
+          onChange={(e) => setPasteText(e.currentTarget.value)}
+        />
+        <Group justify="flex-end" mt="md">
+          <Button variant="default" onClick={() => setPasteModalOpen(false)}>
+            {t('Cancel')}
+          </Button>
+          <Button
+            onClick={() => {
+              if (!applyImportedText(pasteText)) {
+                toastError(t('No MCP servers parsed from clipboard'))
+                return
+              }
+              setPasteModalOpen(false)
+            }}
+          >
+            {t('Import')}
+          </Button>
+        </Group>
+      </Modal>
       {confirmation}
     </>
   )

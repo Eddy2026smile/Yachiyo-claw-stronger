@@ -141,16 +141,46 @@ export function parseServerFromJson(text: string): MCPServerConfig | undefined {
 }
 
 export function parseServersFromJson(text: string): MCPServerConfig[] {
+  const trimmed = text.trim()
+  if (!trimmed) return []
+
+  // Support Desktop Brain Mode string: "http://<tailscale-ip>:8080/mcp | Bearer <secret>"
+  const brainMatch = /^(https?:\/\/[^\s|]+)\s*\|\s*Bearer\s+(.+)$/i.exec(trimmed)
+  if (brainMatch) {
+    return [
+      {
+        id: uuid(),
+        name: 'Desktop Brain (Tailscale)',
+        enabled: true,
+        transport: {
+          type: 'http',
+          url: brainMatch[1].trim(),
+          headers: {
+            Authorization: `Bearer ${brainMatch[2].trim()}`,
+          },
+        },
+      },
+    ]
+  }
+
   try {
-    const json = JSON.parse(text)
+    const json = JSON.parse(trimmed)
     const servers: MCPServerConfig[] = []
-    for (const [key, value] of Object.entries(json.mcpServers)) {
+
+    const entries: Array<[string, unknown]> =
+      json && typeof json === 'object' && 'mcpServers' in json && json.mcpServers && typeof json.mcpServers === 'object'
+        ? Object.entries(json.mcpServers as Record<string, unknown>)
+        : Array.isArray(json)
+          ? json.map((item, idx) => [`MCP Server ${idx + 1}`, item])
+          : [[(json as { name?: string })?.name || 'Imported MCP Server', json]]
+
+    for (const [key, value] of entries) {
       try {
         const parsed = serverConfigSchema.parse(value)
         servers.push({
           id: uuid(),
           name: parsed.name ?? key,
-          enabled: false,
+          enabled: true,
           transport: parsed,
         })
       } catch (err) {
