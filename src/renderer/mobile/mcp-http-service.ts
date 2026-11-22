@@ -19,15 +19,24 @@ export interface McpHttpResponse<T = unknown> {
   resumable: boolean
 }
 
-class MockSecureStorage {
-  private values = new Map<string, unknown>()
+import { 
+  encryptMobileProtectedValue,
+  decryptMobileProtectedValue,
+  isYachiyoSecureStorageEnvelope
+} from '../platform/native/yachiyo_secure_storage'
+
+export class MockSecureStorage {
+  private values = new Map<string, string>()
 
   async set(key: string, value: unknown): Promise<void> {
-    this.values.set(key, value)
+    this.values.set(key, await encryptMobileProtectedValue(JSON.stringify(value), 'mcp_remote'))
   }
 
   async get<T = unknown>(key: string): Promise<T | null> {
-    return this.values.get(key) as T ?? null
+    const value = this.values.get(key)
+    if (!value) return null
+    if (!isYachiyoSecureStorageEnvelope(value)) throw new Error('Invalid storage envelope')
+    return JSON.parse(await decryptMobileProtectedValue(value, 'mcp_remote')) as T
   }
 
   async clear(): Promise<void> {
