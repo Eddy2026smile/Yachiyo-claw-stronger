@@ -2,6 +2,7 @@ import { SettingsPage, SettingsSection } from '@/components/settings/SettingsPag
 import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { SkillsSection } from '@/components/settings/skills'
+import { Capacitor } from '@capacitor/core'
 
 export const Route = createFileRoute('/settings/skills')({
   component: RouteComponent,

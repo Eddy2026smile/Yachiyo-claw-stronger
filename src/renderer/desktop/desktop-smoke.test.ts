@@ -48,5 +48,16 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(skillsSection).toContain('platform.type === \'mobile\'')
     expect(skillsSection).toContain('await installMarketplaceSkill(skill)')
     expect(skillsSection).toContain('toastError(t(\'Failed to install skill\'))')
+    expect(skillsSection).toContain('Capacitor.isNativePlatform()')
+  })
+
+  it('positions toasts above bottom navigation in flow-glass theme', () => {
+    const flowGlassCss = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/flow-glass.css'),
+      'utf8'
+    )
+    expect(flowGlassCss).toContain('.sonner-toast {')
+    expect(flowGlassCss).toContain('bottom: 88px !important')
+    expect(flowGlassCss).toContain('z-index: 9999 !important')
   })
 })

@@ -2111,6 +2111,11 @@ html[data-yachiyo-appearance="flow-glass"] .yachiyo-live2d-move-panel {
   bottom: calc(var(--flow-nav-height) + 84px);
 }
 
+html[data-yachiyo-appearance="flow-glass"] .sonner-toast {
+  bottom: 88px !important;
+  z-index: 9999 !important;
+}
+
 html[data-yachiyo-appearance="flow-glass"] .yachiyo-interactive-round-button,
 html[data-yachiyo-appearance="flow-glass"] .yachiyo-interactive-llm-selector,
 html[data-yachiyo-appearance="flow-glass"] .yachiyo-interactive-keyboard-input .mantine-Textarea-input,
