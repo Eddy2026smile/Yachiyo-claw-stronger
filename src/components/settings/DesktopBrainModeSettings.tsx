@@ -1,12 +1,47 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+
+const STORAGE_KEY = 'yachiyo:desktop-brain-mode'
+
+interface DesktopBrainConfig {
+  enabled: boolean
+  tailscaleIp: string
+  secret: string
+}
+
+function loadConfig(): DesktopBrainConfig {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<DesktopBrainConfig>
+      return {
+        enabled: Boolean(parsed.enabled),
+        tailscaleIp: parsed.tailscaleIp || '100.x.y.z',
+        secret: parsed.secret || crypto.randomUUID(),
+      }
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return {
+    enabled: false,
+    tailscaleIp: '100.x.y.z',
+    secret: crypto.randomUUID(),
+  }
+}
 
 export function DesktopBrainModeSettings() {
-  const [enabled, setEnabled] = useState(false)
-  const [tailscaleIp, setTailscaleIp] = useState('100.x.y.z')
-  const [secret, setSecret] = useState(() => crypto.randomUUID())
+  const [config, setConfig] = useState<DesktopBrainConfig>(loadConfig)
   const [copied, setCopied] = useState(false)
 
-  const connectionString = `http://${tailscaleIp}:8080/mcp | Bearer ${secret}`
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
+    } catch {
+      // ignore storage errors
+    }
+  }, [config])
+
+  const connectionString = `http://${config.tailscaleIp}:8080/mcp | Bearer ${config.secret}`
 
   const handleCopy = () => {
     void navigator.clipboard?.writeText(connectionString)
@@ -25,8 +60,8 @@ export function DesktopBrainModeSettings() {
         </div>
         <input
           type="checkbox"
-          checked={enabled}
-          onChange={(e) => setEnabled(e.target.checked)}
+          checked={config.enabled}
+          onChange={(e) => setConfig((prev) => ({ ...prev, enabled: e.target.checked }))}
           aria-label="Enable Desktop Brain Mode"
         />
       </div>
@@ -35,8 +70,8 @@ export function DesktopBrainModeSettings() {
         <label className="block text-sm font-medium">Tailscale IP</label>
         <input
           type="text"
-          value={tailscaleIp}
-          onChange={(e) => setTailscaleIp(e.target.value)}
+          value={config.tailscaleIp}
+          onChange={(e) => setConfig((prev) => ({ ...prev, tailscaleIp: e.target.value }))}
           placeholder="100.x.y.z"
           className="w-full rounded border px-3 py-2 text-sm"
         />
@@ -60,7 +95,7 @@ export function DesktopBrainModeSettings() {
           </button>
           <button
             type="button"
-            onClick={() => setSecret(crypto.randomUUID())}
+            onClick={() => setConfig((prev) => ({ ...prev, secret: crypto.randomUUID() }))}
             className="rounded border px-3 py-2 text-sm"
           >
             Rotate
