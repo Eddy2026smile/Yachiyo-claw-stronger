@@ -210,7 +210,7 @@ export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch = fetch): typeof
       credentials: 'omit',
       cache: 'no-store',
     })
-  }) as typeof fetch
+  } as typeof fetch
 }
 
 export async function beginMcpOAuth(options: McpOAuthProviderOptions): Promise<void> {
