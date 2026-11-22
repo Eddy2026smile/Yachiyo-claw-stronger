@@ -341,41 +341,63 @@ export const SkillsSection: FC = () => {
       if (Capacitor.isNativePlatform()) {
         discovered = await skillsController.scanRepo(parsed.owner, parsed.repo)
       } else {
-        // On web/desktop, use proxy endpoint to avoid CORS
-        const response = await fetch(`/proxy/github.com/repos/${parsed.owner}/${parsed.repo}/contents?recursive=1`)
-        if (!response.ok) {
-          if (response.status === 404) {
+        // On web/desktop, use proxy endpoint to fetch GitHub tree API
+        const treeUrl = `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/git/trees/HEAD?recursive=1`
+        const treeResponse = await fetch(`/proxy?url=${encodeURIComponent(treeUrl)}`)
+        if (!treeResponse.ok) {
+          if (treeResponse.status === 404) {
             throw new Error(t('Repository not found. Please check the URL and permissions.') as string)
           }
-          throw new Error(`GitHub API ${response.status}`)
+          throw new Error(`GitHub API ${treeResponse.status}`)
         }
-        
-        const contents = await response.json()
-        if (!Array.isArray(contents)) {
+
+        const treeData = await treeResponse.json()
+        if (!treeData?.tree || !Array.isArray(treeData.tree)) {
           throw new Error(t('Unexpected response from GitHub API') as string)
         }
 
-        discovered = contents
-          .filter((file: any) => {
-            if (file.type !== 'file') return false
-            // Case-insensitive check for SKILL.md in path
-            const path = file.path.toLowerCase()
-            return path.endsWith('skill.md') || 
-                   path.includes('/skill.md') ||
-                   path.endsWith('skill.json') ||
-                   path.includes('/skill.json')
-          })
-          .map((file: any) => {
+        // Filter for blob files ending with skill.md (case insensitive)
+        const skillFiles = treeData.tree.filter(
+          (item: any) => 
+            item.type === 'blob' && 
+            item.path.toLowerCase().endsWith('skill.md')
+        )
+
+        // Process each skill file in parallel
+        discovered = await Promise.all(
+          skillFiles.map(async (file: any) => {
             const pathParts = file.path.split('/')
             const dirName = pathParts.length > 1 ? pathParts[pathParts.length - 2] : parsed.repo
-            return {
-              name: dirName,
-              path: file.path,
-              downloadUrl: file.download_url,
-              description: t('GitHub Skill') as string,
-              repo: `${parsed.owner}/${parsed.repo}`
+            const contentUrl = `https://raw.githubusercontent.com/${parsed.owner}/${parsed.repo}/HEAD/${file.path}`
+            
+            try {
+              const contentResponse = await fetch(`/proxy?url=${encodeURIComponent(contentUrl)}`)
+              if (!contentResponse.ok) throw new Error('Failed to fetch skill content')
+              
+              const content = await contentResponse.text()
+              // Extract first line or first paragraph as description
+              const description = content.split('\n').find(line => line.trim().length > 0) || 
+                                t('GitHub Skill')
+              
+              return {
+                name: dirName,
+                path: file.path,
+                downloadUrl: contentUrl,
+                description,
+                repo: `${parsed.owner}/${parsed.repo}`
+              }
+            } catch (error) {
+              console.error('Failed to fetch skill content:', error)
+              return {
+                name: dirName,
+                path: file.path,
+                downloadUrl: contentUrl,
+                description: t('GitHub Skill'),
+                repo: `${parsed.owner}/${parsed.repo}`
+              }
             }
           })
+        )
       }
 
       setDetectedSkills(discovered)
