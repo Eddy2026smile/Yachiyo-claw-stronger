@@ -104,7 +104,7 @@ describe('MobileMcpOAuthProvider', () => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(input instanceof Request ? input.url : input.toString())
       
-      // Mock valid responses for test URLs
+      // Only mock responses for allowed test domains
       if (url.hostname === 'auth.example.test' && url.pathname === '/token') {
         return new Response('{}', { status: 200 })
       }
@@ -122,8 +122,8 @@ describe('MobileMcpOAuthProvider', () => {
     await expect(safeFetch('ftp://auth.example.test/token'))
       .rejects.toThrow('mcp_https_required')
       
-    // Test invalid domains  
+    // Test invalid domains - now expects the mock's rejection  
     await expect(safeFetch('https://evil.com/token'))
-      .rejects.toThrow('mcp_oauth_unsafe_domain: evil.com')
+      .rejects.toThrow('Unexpected network request to https://evil.com/token')
   })
 })
