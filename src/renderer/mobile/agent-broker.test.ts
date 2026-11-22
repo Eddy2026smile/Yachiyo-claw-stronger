@@ -1,11 +1,6 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CORE_AGENT_PRINCIPAL } from '@shared/agent'
 import {
-  mcpRegistrySearch,
-  mcpConnectRemote,
-  pollWorkflowStatus
-} from './agent-broker'
-import {
   AgentActionAlreadyAppliedError,
   AgentActionRecoveryRequiredError,
   ANDROID_AGENT_WORKING_DIRECTORY,
