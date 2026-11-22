@@ -286,17 +286,16 @@ const SkillsSpotlight: FC<{
       const entryKey = getPrimarySkillKey(entry)
       setInstalling(entryKey)
       try {
-        const payload: MarketplaceSkill =
-          'id' in entry
-            ? { ...entry, installs: entry.installs ?? 0 }
-            : {
-                id: `${entry.source}/${entry.id}`,
-                skillId: entry.id,
-                name: entry.title,
-                installs: entry.installs ?? 0,
-                source: entry.source,
-                description: entry.description,
-              }
+        const payload: MarketplaceSkill = {
+          id: `${entry.source}/${entry.id}`,
+          skillId: entry.id,
+          name: entry.title,
+          installs: entry.installs ?? 0,
+          source: entry.source,
+          description: entry.description,
+          ...('homepage' in entry ? { homepage: entry.homepage } : {}),
+          ...('icon' in entry ? { icon: entry.icon } : {})
+        }
 
         const result = await skillsController.installMarketplaceSkill(payload)
 

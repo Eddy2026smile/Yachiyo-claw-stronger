@@ -18,7 +18,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/vercel-labs/skills/find-skills',
   },
   {
-    name: 'vercel-react-best-practices',
+    id: 'vercel-react-best-practices',
     title: 'Vercel React Best Practices',
     description:
       'React and Next.js performance optimization guidelines from Vercel Engineering. Contains 40+ rules for ' +
@@ -28,7 +28,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices',
   },
   {
-    name: 'remotion-best-practices',
+    id: 'remotion-best-practices',
     title: 'Remotion Best Practices',
     description: 'Guidelines for creating high-quality video animations and motion graphics using Remotion framework.',
     source: 'remotion-dev/skills',
@@ -36,7 +36,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/remotion-dev/skills/remotion-best-practices',
   },
   {
-    name: 'frontend-design',
+    id: 'frontend-design',
     title: 'Frontend Design',
     description:
       'Create distinctive, production-grade frontend interfaces with high design quality. Avoid generic AI ' +
@@ -46,7 +46,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/anthropics/skills/frontend-design',
   },
   {
-    name: 'agent-browser',
+    id: 'agent-browser',
     title: 'Agent Browser',
     description:
       'Fast Rust-based headless browser automation CLI with Node.js fallback for navigating, clicking, typing, ' +
@@ -56,7 +56,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/vercel-labs/agent-browser/agent-browser',
   },
   {
-    name: 'browser-use',
+    id: 'browser-use',
     title: 'Browser Use',
     description:
       'Comprehensive browser automation framework for web testing, form filling, data extraction, and web ' +
@@ -66,7 +66,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/browser-use/browser-use/browser-use',
   },
   {
-    name: 'brainstorming',
+    id: 'brainstorming',
     title: 'Brainstorming',
     description:
       'Structured brainstorming techniques and frameworks for generating creative ideas and exploring solution ' +
@@ -76,7 +76,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/obra/superpowers/brainstorming',
   },
   {
-    name: 'supabase-postgres-best-practices',
+    id: 'supabase-postgres-best-practices',
     title: 'Supabase PostgreSQL Best Practices',
     description: 'Database design, optimization, and best practices for PostgreSQL and Supabase applications.',
     source: 'supabase/agent-skills',
@@ -84,7 +84,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/supabase/agent-skills/supabase-postgres-best-practices',
   },
   {
-    name: 'pdf',
+    id: 'pdf',
     title: 'PDF Processing',
     description: 'Tools and techniques for reading, analyzing, and manipulating PDF documents programmatically.',
     source: 'anthropics/skills',
@@ -92,7 +92,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/anthropics/skills/pdf',
   },
   {
-    name: 'systematic-debugging',
+    id: 'systematic-debugging',
     title: 'Systematic Debugging',
     description: 'Methodical approaches to identifying, isolating, and resolving bugs in complex systems.',
     source: 'obra/superpowers',
@@ -100,7 +100,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/obra/superpowers/systematic-debugging',
   },
   {
-    name: 'test-driven-development',
+    id: 'test-driven-development',
     title: 'Test-Driven Development',
     description: 'TDD methodology and patterns for writing tests first to drive software design and implementation.',
     source: 'obra/superpowers',
@@ -108,7 +108,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/obra/superpowers/test-driven-development',
   },
   {
-    name: 'writing-plans',
+    id: 'writing-plans',
     title: 'Writing Plans',
     description: 'Structured planning and outlining techniques for creating clear, organized written content.',
     source: 'obra/superpowers',
@@ -116,7 +116,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/obra/superpowers/writing-plans',
   },
   {
-    name: 'code-review',
+    id: 'code-review',
     title: 'Code Review',
     description:
       'Best practices for conducting thorough code reviews, identifying issues, and providing constructive feedback.',
@@ -125,7 +125,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/anthropics/skills/code-review',
   },
   {
-    name: 'api-design',
+    id: 'api-design',
     title: 'API Design',
     description: 'Principles and patterns for designing clean, intuitive, and maintainable APIs.',
     source: 'wshobson/agents',
@@ -133,7 +133,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/wshobson/agents/api-design-principles',
   },
   {
-    name: 'database-optimization',
+    id: 'database-optimization',
     title: 'Database Optimization',
     description: 'Techniques for optimizing database queries, indexing strategies, and performance tuning.',
     source: 'wshobson/agents',
@@ -141,7 +141,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/wshobson/agents/sql-optimization-patterns',
   },
   {
-    name: 'technical-writing',
+    id: 'technical-writing',
     title: 'Technical Writing',
     description: 'Guidelines for writing clear, accurate, and user-friendly technical documentation.',
     source: 'obra/superpowers',
@@ -149,7 +149,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/obra/superpowers/writing-skills',
   },
   {
-    name: 'architecture-patterns',
+    id: 'architecture-patterns',
     title: 'Architecture Patterns',
     description: 'Common architectural patterns and design principles for building scalable, maintainable systems.',
     source: 'wshobson/agents',
@@ -157,7 +157,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/wshobson/agents/architecture-patterns',
   },
   {
-    name: 'error-handling',
+    id: 'error-handling',
     title: 'Error Handling Patterns',
     description: 'Best practices for implementing robust error handling, recovery, and user feedback mechanisms.',
     source: 'wshobson/agents',
@@ -165,7 +165,7 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     homepage: 'https://skills.sh/wshobson/agents/error-handling-patterns',
   },
   {
-    name: 'responsive-design',
+    id: 'responsive-design',
     title: 'Responsive Design',
     description: 'Techniques for creating mobile-first, responsive web interfaces that work across all device sizes.',
     source: 'wshobson/agents',
