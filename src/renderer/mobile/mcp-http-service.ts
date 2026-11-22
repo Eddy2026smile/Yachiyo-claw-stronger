@@ -19,9 +19,45 @@ export interface McpHttpResponse<T = unknown> {
   resumable: boolean
 }
 
+import { SecureStorage } from '../platform/storages.mobile-secure'
+
 export interface McpPkceStateStore {
   set(state: string, value: { verifier: string; redirectUri: string; expiresAt: number }): Promise<void>
   take(state: string): Promise<{ verifier: string; redirectUri: string; expiresAt: number } | null>
+}
+
+export interface RemoteMcpConnection {
+  endpoint: string
+  authToken: string
+}
+
+const remoteConnectionStorage = new SecureStorage('mcp_remote_connection')
+
+export async function saveRemoteMcpConnection(conn: RemoteMcpConnection): Promise<void> {
+  await remoteConnectionStorage.set('active', conn)
+}
+
+export async function getRemoteMcpConnection(): Promise<RemoteMcpConnection | null> {
+  return remoteConnectionStorage.get('active') as Promise<RemoteMcpConnection | null>
+}
+
+export async function createRemoteMcpFetch(fetchImpl?: typeof fetch): typeof fetch {
+  const conn = await getRemoteMcpConnection()
+  if (!conn) throw new Error('No remote MCP connection configured')
+
+  const baseFetch = fetchImpl || fetch
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(input.toString(), conn.endpoint)
+    return baseFetch(url, {
+      ...init,
+      headers: {
+        ...init?.headers,
+        Authorization: `Bearer ${conn.authToken}`
+      },
+      redirect: 'error',
+      credentials: 'omit'
+    })
+  }
 }
 
 const DEFAULT_PROTOCOL_VERSION = '2025-06-18'
@@ -57,6 +93,21 @@ function isPrivateHostname(hostname: string): boolean {
     host.startsWith('fea') ||
     host.startsWith('feb')
   )
+}
+
+export function createSafeMcpOAuthFetch(fetchImpl: typeof fetch = fetch, policy?: McpEndpointPolicy): typeof fetch {
+  const boundFetch = fetchImpl === globalThis.fetch ? fetchImpl.bind(globalThis) : fetchImpl
+  
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = input instanceof Request ? input.url : input.toString()
+    assertSafeMcpEndpoint(url, policy)
+    return boundFetch(input, {
+      ...init,
+      redirect: 'error',
+      credentials: 'omit',
+      cache: 'no-store',
+    })
+  }
 }
 
 export function assertSafeMcpEndpoint(input: string, policy: McpEndpointPolicy = {}): URL {
