@@ -1,31 +1,17 @@
-import { useState } from 'react';
-import { Stack, TextInput, SimpleGrid, Card, Text, CopyButton, Code } from '@mantine/core';
-import { MCPServerConfig, exampleMCPServers } from '../../desktop/mcp-transport';
+import { SettingsPage, SettingsSection } from '@/components/settings/SettingsPage'
+import { createFileRoute } from '@tanstack/react-router'
+import { DesktopBrainModeSettings } from '@/components/settings/DesktopBrainModeSettings'
 
-export function DesktopBrainModeSettings() {
-  const [tailscaleKey, setTailscaleKey] = useState('');
-  const [servers, setServers] = useState<MCPServerConfig[]>(exampleMCPServers);
+export const Route = createFileRoute('/settings/desktop-brain-mode')({
+  component: RouteComponent,
+})
 
+function RouteComponent() {
   return (
-    <Stack>
-      <TextInput 
-        label="Tailscale Connection String"
-        value={tailscaleKey}
-        readOnly
-        rightSection={<CopyButton value={tailscaleKey}>{({ copy }) => (
-          <button onClick={copy}>Copy</button>
-        )}</CopyButton>}
-      />
-      <Text>Keep awake guidance: Use your OS power settings</Text>
-      
-      <SimpleGrid cols={2}>
-        {servers.map(server => (
-          <Card key={server.id}>
-            <Text>{server.name}</Text>
-            <Code>{server.command.join(' ')}</Code>
-          </Card>
-        ))}
-      </SimpleGrid>
-    </Stack>
-  );
+    <SettingsPage title="Desktop Brain Mode" description="Local MCP server and Tailscale connectivity">
+      <SettingsSection>
+        <DesktopBrainModeSettings />
+      </SettingsSection>
+    </SettingsPage>
+  )
 }
