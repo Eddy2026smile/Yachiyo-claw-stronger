@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import { homedir } from 'node:os'
 import { extname, join, normalize, resolve } from 'node:path'
 import { URL } from 'node:url'
+import { exec, execSync } from 'node:child_process'
 import { McpHttpService } from '../mobile/mcp-http-service'
 
 export interface DesktopMcpServer {
@@ -144,6 +145,61 @@ export function createDesktopMcpServer(
           res.writeHead(204).end()
         } else {
           res.writeHead(405).end()
+        }
+        return
+      }
+
+      if (pathname === '/tools/list') {
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
+          tools: ['adb_devices', 'adb_screenshot', 'adb_ui_tree', 'adb_tap', 'adb_input_text', 'adb_logcat', 'adb_install_apk']
+        }))
+        return
+      }
+
+      if (pathname === '/tools/call') {
+        if (!isAuthorized()) {
+          res.writeHead(401).end()
+          return
+        }
+        try {
+          const { tool, args } = JSON.parse(await readBody(req))
+          let result: any
+          switch (tool) {
+            case 'adb_devices':
+              result = execSync('adb devices -l', { encoding: 'utf8' })
+              break
+            case 'adb_screenshot':
+              result = execSync('adb exec-out screencap -p', { encoding: 'base64' })
+              break
+            case 'adb_ui_tree':
+              result = execSync('adb exec-out uiautomator dump /dev/tty', { encoding: 'utf8' })
+              break
+            case 'adb_tap':
+              if (!args || args.length < 2) throw new Error('Missing x,y coordinates')
+              execSync(`adb shell input tap ${args[0]} ${args[1]}`)
+              result = { success: true }
+              break
+            case 'adb_input_text':
+              if (!args || !args[0]) throw new Error('Missing text')
+              execSync(`adb shell input text "${args[0].replace(/"/g, '\\"')}"`)
+              result = { success: true }
+              break
+            case 'adb_logcat':
+              result = execSync('adb logcat -d -t 100', { encoding: 'utf8' })
+              break
+            case 'adb_install_apk':
+              if (!args || !args[0]) throw new Error('Missing APK path')
+              result = execSync(`adb install -r "${args[0]}"`, { encoding: 'utf8' })
+              break
+            default:
+              throw new Error('Unknown tool')
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ success: true, result }))
+        } catch (err) {
+          res.writeHead(400, { 'Content-Type': 'application/json' }).end(JSON.stringify({
+            success: false,
+            error: err instanceof Error ? err.message : 'ADB command failed'
+          }))
         }
         return
       }

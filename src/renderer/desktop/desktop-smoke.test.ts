@@ -76,4 +76,20 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(flowGlassCss).toContain('bottom: 88px !important')
     expect(flowGlassCss).toContain('z-index: 9999 !important')
   })
+
+  it('exposes Android ADB tools via MCP server', () => {
+    const mcpServer = readFileSync(
+      join(process.cwd(), 'src/renderer/desktop/mcp-server.ts'),
+      'utf8'
+    )
+    expect(mcpServer).toContain('/tools/list')
+    expect(mcpServer).toContain('/tools/call')
+    expect(mcpServer).toContain('adb devices -l')
+    expect(mcpServer).toContain('adb exec-out screencap -p')
+    expect(mcpServer).toContain('adb exec-out uiautomator dump')
+    expect(mcpServer).toContain('adb shell input tap')
+    expect(mcpServer).toContain('adb shell input text')
+    expect(mcpServer).toContain('adb logcat -d -t 100')
+    expect(mcpServer).toContain('adb install -r')
+  })
 })
