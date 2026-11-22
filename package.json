@@ -27,6 +27,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run test/integration --testTimeout=300000",
+    "test:desktop-mcp": "vitest run src/renderer/desktop/mcp-proxy.test.ts",
     "test:file-conversation": "vitest run test/integration/file-conversation --testTimeout=120000",
     "test:model-provider": "vitest run test/integration/model-provider --testTimeout=120000",
     "lint": "biome lint .",
