@@ -1,88 +1,171 @@
-import { createServer, type IncomingMessage, type ServerResponse } from 'http'
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { extname, join, normalize, resolve } from 'node:path'
+import { URL } from 'node:url'
 import { McpHttpService } from '../mobile/mcp-http-service'
-import { URL } from 'url'
 
 export interface DesktopMcpServer {
   start(): Promise<void>
   stop(): Promise<void>
 }
 
-export function createDesktopMcpServer(
-  port = 8080, 
-  secret: string,
-  options?: {
-    allowLan?: boolean
-    allowedHosts?: string[]
+interface SyncEnvelope {
+  revision: number
+  updatedAt: string
+  deviceId?: string
+  data: Record<string, unknown>
+}
+
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
+  '.wasm': 'application/wasm',
+}
+
+function setCorsHeaders(res: ServerResponse) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Mcp-Session-Id, X-Target-Url')
+}
+
+async function readBody(req: IncomingMessage): Promise<string> {
+  let body = ''
+  for await (const chunk of req) {
+    body += chunk
   }
+  return body
+}
+
+export function createDesktopMcpServer(
+  port = 8080,
+  secret: string,
+  options?: { allowLan?: boolean; allowedHosts?: string[]; staticDir?: string; syncDir?: string }
 ): DesktopMcpServer {
+  const syncDir = options?.syncDir || join(homedir(), '.yachiyo-claw')
+  const syncFile = join(syncDir, 'sync-state.json')
+  const staticDir = resolve(options?.staticDir || join(process.cwd(), 'dist', 'renderer'))
+  if (!existsSync(syncDir)) mkdirSync(syncDir, { recursive: true })
+
+  const readSyncState = (): SyncEnvelope => {
+    try {
+      if (existsSync(syncFile)) return JSON.parse(readFileSync(syncFile, 'utf8')) as SyncEnvelope
+    } catch {}
+    return { revision: 0, updatedAt: new Date(0).toISOString(), data: {} }
+  }
+
   const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     try {
-      // Verify authorization
-      const auth = req.headers.authorization?.replace(/^Bearer /, '')
-      if (auth !== secret) {
-        res.writeHead(401).end()
-        return
-      }
-
-      // Handle CORS preflight
+      setCorsHeaders(res)
       if (req.method === 'OPTIONS') {
-        res.writeHead(204, {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, Mcp-Session-Id',
-        }).end()
+        res.writeHead(204).end()
+        return
+      }
+      const reqUrl = new URL(req.url || '/', `http://localhost:${port}`)
+      const pathname = reqUrl.pathname
+      const isAuthorized = () => req.headers.authorization?.replace(/^Bearer\s+/i, '').trim() === secret
+
+      if (pathname === '/sync') {
+        if (!isAuthorized()) {
+          res.writeHead(401, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'Unauthorized' }))
+          return
+        }
+        if (req.method === 'GET') {
+          res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(readSyncState()))
+          return
+        }
+        if (req.method === 'POST') {
+          const payload = JSON.parse((await readBody(req)) || '{}') as Partial<SyncEnvelope>
+          const current = readSyncState()
+          const incomingRev = typeof payload.revision === 'number' ? payload.revision : Date.now()
+          if (incomingRev >= current.revision && payload.data && typeof payload.data === 'object') {
+            const next: SyncEnvelope = {
+              revision: incomingRev,
+              updatedAt: new Date().toISOString(),
+              deviceId: payload.deviceId,
+              data: payload.data,
+            }
+            writeFileSync(syncFile, JSON.stringify(next, null, 2), 'utf8')
+            res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(next))
+          } else {
+            res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(current))
+          }
+          return
+        }
+        res.writeHead(405).end()
         return
       }
 
-      // Create MCP service instance
-      const service = new McpHttpService({
-        endpoint: `http://localhost:${port}/mcp`, // Base URL will be overridden per request
-        policy: { 
-          allowLan: options?.allowLan,
-          allowedHosts: options?.allowedHosts 
-        },
-        fetchImpl: async (input, init) => {
-          // Convert to absolute URL
-          const url = new URL(input.toString(), `http://localhost:${port}`)
-          return fetch(url, init)
+      if (pathname === '/proxy') {
+        const targetRaw = reqUrl.searchParams.get('url') || req.headers['x-target-url']?.toString()
+        if (!targetRaw) {
+          res.writeHead(400, { 'Content-Type': 'application/json' }).end(JSON.stringify({ error: 'Missing url' }))
+          return
         }
-      })
-
-      // Handle requests
-      if (req.method === 'POST') {
-        let body = ''
-        for await (const chunk of req) {
-          body += chunk
+        const forwardHeaders: Record<string, string> = {}
+        for (const [k, v] of Object.entries(req.headers)) {
+          if (!v) continue
+          if (['host', 'origin', 'referer', 'connection', 'content-length', 'x-target-url'].includes(k.toLowerCase())) continue
+          forwardHeaders[k] = Array.isArray(v) ? v.join(', ') : v
         }
-        
-        const result = await service.call(JSON.parse(body))
-        res.writeHead(200, {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }).end(JSON.stringify(result))
-      } else if (req.method === 'DELETE') {
-        await service.close()
-        res.writeHead(204, {
-          'Access-Control-Allow-Origin': '*'
-        }).end()
-      } else {
-        res.writeHead(405).end()
+        const body = req.method === 'GET' || req.method === 'HEAD' ? undefined : await readBody(req)
+        const upstream = await fetch(new URL(targetRaw).toString(), { method: req.method, headers: forwardHeaders, body })
+        const respHeaders: Record<string, string> = { 'Access-Control-Allow-Origin': '*' }
+        upstream.headers.forEach((val, key) => {
+          if (!['content-encoding', 'transfer-encoding', 'content-length'].includes(key.toLowerCase())) respHeaders[key] = val
+        })
+        res.writeHead(upstream.status, respHeaders).end(Buffer.from(await upstream.arrayBuffer()))
+        return
       }
+
+      if (pathname === '/mcp') {
+        if (!isAuthorized()) {
+          res.writeHead(401).end()
+          return
+        }
+        const service = new McpHttpService({
+          endpoint: `http://localhost:${port}/mcp`,
+          policy: { allowLan: options?.allowLan, allowedHosts: options?.allowedHosts },
+          fetchImpl: async (input, init) => fetch(new URL(input.toString(), `http://localhost:${port}`), init),
+        })
+        if (req.method === 'POST') {
+          const result = await service.call(JSON.parse(await readBody(req)))
+          res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(result))
+        } else if (req.method === 'DELETE') {
+          await service.close()
+          res.writeHead(204).end()
+        } else {
+          res.writeHead(405).end()
+        }
+        return
+      }
+
+      if (existsSync(staticDir)) {
+        const safePath = normalize(pathname).replace(/^(\.\.(\/|\\|$))+/, '')
+        let filePath = join(staticDir, safePath === '/' ? 'index.html' : safePath)
+        if (!existsSync(filePath) || statSync(filePath).isDirectory()) filePath = join(staticDir, 'index.html')
+        if (existsSync(filePath)) {
+          res.writeHead(200, { 'Content-Type': MIME_TYPES[extname(filePath).toLowerCase()] || 'application/octet-stream' }).end(readFileSync(filePath))
+          return
+        }
+      }
+      res.writeHead(404).end('Not Found')
     } catch (err) {
-      console.error('MCP Server Error:', err)
+      console.error('Gateway Server Error:', err)
       res.writeHead(500).end()
     }
   })
 
   return {
-    start: () => new Promise(resolve => {
-      server.listen(port, () => {
-        console.log(`MCP Server running on port ${port}`)
-        resolve()
-      })
-    }),
-    stop: () => new Promise((resolve, reject) => {
-      server.close(err => err ? reject(err) : resolve())
-    })
+    start: () => new Promise((r) => server.listen(port, '0.0.0.0', () => { console.log(`Gateway on :${port}`); r() })),
+    stop: () => new Promise((r, j) => server.close((e) => (e ? j(e) : r()))),
   }
 }

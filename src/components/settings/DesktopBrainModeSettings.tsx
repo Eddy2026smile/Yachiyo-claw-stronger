@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { pullBrainSync, pushBrainSync } from '../../renderer/setup/brain_sync'
 
 const STORAGE_KEY = 'yachiyo:desktop-brain-mode'
 
@@ -19,26 +20,19 @@ function loadConfig(): DesktopBrainConfig {
         secret: parsed.secret || crypto.randomUUID(),
       }
     }
-  } catch {
-    // ignore storage errors
-  }
-  return {
-    enabled: false,
-    tailscaleIp: '100.x.y.z',
-    secret: crypto.randomUUID(),
-  }
+  } catch {}
+  return { enabled: false, tailscaleIp: '100.x.y.z', secret: crypto.randomUUID() }
 }
 
 export function DesktopBrainModeSettings() {
   const [config, setConfig] = useState<DesktopBrainConfig>(loadConfig)
   const [copied, setCopied] = useState(false)
+  const [syncStatus, setSyncStatus] = useState('')
 
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-    } catch {
-      // ignore storage errors
-    }
+    } catch {}
   }, [config])
 
   const connectionString = `http://${config.tailscaleIp}:8080/mcp | Bearer ${config.secret}`
@@ -49,14 +43,31 @@ export function DesktopBrainModeSettings() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handlePush = async () => {
+    setSyncStatus('Pushing state...')
+    const res = await pushBrainSync()
+    setSyncStatus(res.ok ? `Synced to server (rev ${res.revision})` : 'Push failed — verify Tailscale IP & secret')
+  }
+
+  const handlePull = async () => {
+    setSyncStatus('Pulling state...')
+    const res = await pullBrainSync()
+    if (res.ok && res.updated) {
+      setSyncStatus('Updated — reloading...')
+      setTimeout(() => window.location.reload(), 600)
+    } else if (res.ok) {
+      setSyncStatus('Already up to date')
+    } else {
+      setSyncStatus('Pull failed — verify Tailscale IP & secret')
+    }
+  }
+
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Desktop Brain Mode</h2>
-          <p className="text-sm opacity-75">
-            Expose local stdio MCP servers over Tailscale Streamable HTTP (port 8080).
-          </p>
+          <h2 className="text-lg font-semibold">Desktop Brain Mode &amp; Full Sync</h2>
+          <p className="text-sm opacity-75">Sync chats, API keys, characters &amp; MCPs over Tailscale (port 8080).</p>
         </div>
         <input
           type="checkbox"
@@ -67,7 +78,7 @@ export function DesktopBrainModeSettings() {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium">Tailscale IP</label>
+        <label className="block text-sm font-medium">Mac Tailscale IP</label>
         <input
           type="text"
           value={config.tailscaleIp}
@@ -80,17 +91,8 @@ export function DesktopBrainModeSettings() {
       <div className="space-y-2">
         <label className="block text-sm font-medium">Tailscale Connection String &amp; Secret</label>
         <div className="flex gap-2">
-          <input
-            type="text"
-            readOnly
-            value={connectionString}
-            className="w-full rounded border px-3 py-2 font-mono text-xs"
-          />
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="rounded border px-3 py-2 text-sm font-medium"
-          >
+          <input type="text" readOnly value={connectionString} className="w-full rounded border px-3 py-2 font-mono text-xs" />
+          <button type="button" onClick={handleCopy} className="rounded border px-3 py-2 text-sm font-medium">
             {copied ? 'Copied' : 'Copy'}
           </button>
           <button
@@ -103,8 +105,18 @@ export function DesktopBrainModeSettings() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-2 pt-2">
+        <button type="button" onClick={() => void handlePush()} className="rounded border px-3 py-1.5 text-sm font-medium">
+          Push This Device → Server
+        </button>
+        <button type="button" onClick={() => void handlePull()} className="rounded border px-3 py-1.5 text-sm font-medium">
+          Pull Server → This Device
+        </button>
+        {syncStatus && <span className="text-xs opacity-80">{syncStatus}</span>}
+      </div>
+
       <p className="text-xs opacity-75">
-        Keep-awake tip: Keep your desktop plugged in and prevent sleep while Android is paired.
+        CORS-Free Safari Proxy: For external HTTP MCPs in Safari, use http://localhost:8080/proxy?url=&lt;encoded-url&gt;
       </p>
     </div>
   )
