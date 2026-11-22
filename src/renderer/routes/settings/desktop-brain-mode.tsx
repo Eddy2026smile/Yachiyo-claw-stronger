@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Stack, TextInput, SimpleGrid, Card, Text, CopyButton } from '@mantine/core';
+import { Stack, TextInput, SimpleGrid, Card, Text, CopyButton, Code } from '@mantine/core';
 import { MCPServerConfig, exampleMCPServers } from '../../desktop/mcp-transport';
 
 export function DesktopBrainModeSettings() {
@@ -12,7 +12,9 @@ export function DesktopBrainModeSettings() {
         label="Tailscale Connection String"
         value={tailscaleKey}
         readOnly
-        rightSection={<CopyButton value={tailscaleKey} />}
+        rightSection={<CopyButton value={tailscaleKey}>{({ copy }) => (
+          <button onClick={copy}>Copy</button>
+        )}</CopyButton>}
       />
       <Text>Keep awake guidance: Use your OS power settings</Text>
       

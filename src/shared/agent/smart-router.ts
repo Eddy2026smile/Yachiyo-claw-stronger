@@ -1,4 +1,4 @@
-import { ToolDefinition } from '../agent/types';
+import { ToolDefinition } from './types';
 
 export function shouldRouteToDesktop(
   tool: ToolDefinition,
