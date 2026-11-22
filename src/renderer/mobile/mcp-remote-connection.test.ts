@@ -40,7 +40,7 @@ describe('Remote MCP Connection', () => {
     await remoteFetch('/test')
     
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://desktop.example.com/test',
+      expect.any(URL),
       {
         headers: {
           Authorization: 'Bearer test-token-123'
@@ -49,5 +49,9 @@ describe('Remote MCP Connection', () => {
         credentials: 'omit'
       }
     )
+    
+    // Add additional assertion to verify URL string
+    const [url] = mockFetch.mock.calls[0]
+    expect(url.toString()).toBe('https://desktop.example.com/test')
   })
 })
