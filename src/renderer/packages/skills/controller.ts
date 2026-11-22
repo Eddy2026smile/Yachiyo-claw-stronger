@@ -1,4 +1,6 @@
 import { inspectSkillArchive, SkillHubAdapter, sha256Hex } from '@shared/skills'
+import { toast } from 'sonner'
+import { t } from 'i18next'
 import type {
   MarketplaceSkill,
   SkillFileManifest,
@@ -819,7 +821,17 @@ export async function installSkillFromHub(item: {
   }
 }
 
+export function isSkillHubSkill(skill: MarketplaceSkill): boolean {
+  try {
+    const host = new URL(skill.source).hostname.toLowerCase()
+    return host === 'skillhub.cn' || host.endsWith('.skillhub.cn')
+  } catch {
+    return skill.source.startsWith('skillhub:')
+  }
+}
+
 export const skillsController = {
+  installSkillFromHub,
   async saveSkill(metadata: SkillMetadata, body: string): Promise<SkillInstallResult> {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(metadata.name) || !metadata.description.trim() || !body.trim()) {
       return { success: false, skillName: metadata.name, error: 'Invalid skill metadata or body' }
