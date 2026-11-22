@@ -16,6 +16,27 @@ import type { MCPServerConfig, MCPServerStatus } from './types'
 type TransportConfig = MCPServerConfig['transport']
 type MCPClient = Awaited<ReturnType<typeof createMCPClient>>
 
+function createDesktopProxyFetch(): typeof fetch {
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const rawUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
+    try {
+      const parsed = new URL(rawUrl, window.location.origin)
+      const isLocal =
+        parsed.hostname === 'localhost' ||
+        parsed.hostname === '127.0.0.1' ||
+        parsed.hostname.startsWith('100.')
+      if (!isLocal && (parsed.protocol === 'http:' || parsed.protocol === 'https:')) {
+        const proxyOrigin = window.location.port === '8080' ? window.location.origin : 'http://localhost:8080'
+        const proxiedUrl = `${proxyOrigin}/proxy?url=${encodeURIComponent(parsed.toString())}`
+        return fetch(proxiedUrl, init)
+      }
+    } catch {
+      // fall through to standard fetch
+    }
+    return fetch(input, init)
+  }
+}
+
 async function createClient(
   transportConfig: TransportConfig,
   name = 'chatbox-mcp-client',
@@ -26,7 +47,7 @@ async function createClient(
     throw new Error('stdio MCP transports are unavailable on mobile.')
   }
   if (transportConfig.type === 'http') {
-    const safeFetch = Capacitor.isNativePlatform() ? createSafeMcpOAuthFetch() : undefined
+    const safeFetch = Capacitor.isNativePlatform() ? createSafeMcpOAuthFetch() : createDesktopProxyFetch()
     const createSseClient = async () => {
       const transport = new SSEClientTransport(new URL(transportConfig.url), {
         requestInit: { headers: transportConfig.headers },
