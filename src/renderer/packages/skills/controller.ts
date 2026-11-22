@@ -759,6 +759,7 @@ interface SkillScriptResult {
 }
 
 const BROWSER_SKILLS_KEY = 'yachiyo-browser-skills-v1'
+const SKILLS_UNAVAILABLE = 'skills_require_mobile_app_for_full_features'
 
 function validBrowserSkills(value: unknown): MobileSkillRecord[] {
   if (!Array.isArray(value)) return []
