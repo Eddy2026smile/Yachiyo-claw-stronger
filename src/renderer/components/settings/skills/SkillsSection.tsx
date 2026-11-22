@@ -280,6 +280,11 @@ export const SkillsSection: FC = () => {
       const trimmed = url.trim()
       if (!trimmed) return null
       
+      // Handle GitHub homepage case
+      if (trimmed === 'https://github.com' || trimmed === 'https://github.com/') {
+        return null
+      }
+
       // Handle raw.githubusercontent.com URLs
       if (trimmed.includes('raw.githubusercontent.com')) {
         const parts = trimmed.split('/')
@@ -289,12 +294,26 @@ export const SkillsSection: FC = () => {
 
       // Handle github.com URLs
       if (trimmed.includes('github.com')) {
-        const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`)
-        const pathParts = parsed.pathname.split('/').filter(Boolean)
+        // Ensure URL has protocol
+        const normalizedUrl = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`
+        const parsed = new URL(normalizedUrl)
+        
+        // Simple path parsing without regex
+        const path = parsed.pathname
+        const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path
+        const pathParts = cleanPath.split('/').filter(Boolean)
+        
         if (pathParts.length < 2) return null
+        
+        let repo = pathParts[1]
+        // Remove .git suffix if present
+        if (repo.endsWith('.git')) {
+          repo = repo.slice(0, -4)
+        }
+        
         return { 
           owner: pathParts[0], 
-          repo: pathParts[1].replace(/\.git$/, '') 
+          repo
         }
       }
 
@@ -327,10 +346,9 @@ export const SkillsSection: FC = () => {
         discovered = contents
           .filter((file: any) => {
             if (file.type !== 'file') return false
-            // Case-insensitive check for SKILL.md in any directory
-            const fileName = file.name.toLowerCase()
-            const pathParts = file.path.toLowerCase().split('/')
-            return fileName === 'skill.md' || pathParts.includes('skill.md')
+            // Simple case-insensitive check for SKILL.md
+            const path = file.path.toLowerCase()
+            return path.endsWith('skill.md') || path.includes('/skill.md')
           })
           .map((file: any) => {
             const pathParts = file.path.split('/')
