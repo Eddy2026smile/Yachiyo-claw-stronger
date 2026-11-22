@@ -341,43 +341,22 @@ export const SkillsSection: FC = () => {
       const key = skill.id || skill.skillId
       setInstallingMarketplaceSkill(key)
       try {
-        // On desktop/web, we store the skill info in localStorage
-        if (platform.type !== 'mobile') {
-          const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]')
-          const skillExists = installedSkills.some((s: MarketplaceSkill) => s.id === skill.id)
-          
-          if (!skillExists) {
-            installedSkills.push(skill)
-            localStorage.setItem('desktopSkills', JSON.stringify(installedSkills))
-          }
-
-          settingsStore.setState((state) => ({
-            skills: {
-              ...state.skills,
-              enabledSkillNames: [...new Set([...state.skills.enabledSkillNames, skill.name])],
-            },
-          }))
-          
-          toast.success(t('Skill installed: {{name}}', { name: skill.name }))
-          await fetchSkills()
-          return
+        const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]')
+        const skillExists = installedSkills.some((s: MarketplaceSkill) => s.id === skill.id)
+        
+        if (!skillExists) {
+          installedSkills.push(skill)
+          localStorage.setItem('desktopSkills', JSON.stringify(installedSkills))
         }
 
-        // Mobile installation remains unchanged
-        const result = await skillsController.installMarketplaceSkill(skill)
-        if (!result.success) {
-          toastError(result.error || t('Skill installation failed'))
-          return
-        }
         settingsStore.setState((state) => ({
           skills: {
             ...state.skills,
-            enabledSkillNames: state.skills.enabledSkillNames.includes(result.skillName)
-              ? state.skills.enabledSkillNames
-              : [...state.skills.enabledSkillNames, result.skillName],
+            enabledSkillNames: [...new Set([...state.skills.enabledSkillNames, skill.name])],
           },
         }))
-        toast.success(t('Skill installed: {{name}}', { name: result.skillName }))
+        
+        toast.success(t('Skill installed: {{name}}', { name: skill.name }))
         await fetchSkills()
       } catch (error) {
         toastError(t('Failed to install skill'))
