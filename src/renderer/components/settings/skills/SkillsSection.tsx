@@ -341,12 +341,20 @@ export const SkillsSection: FC = () => {
       const key = skill.id || skill.skillId
       setInstallingMarketplaceSkill(key)
       try {
-        const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]')
-        const skillExists = installedSkills.some((s: MarketplaceSkill) => s.id === skill.id)
-        
-        if (!skillExists) {
-          installedSkills.push(skill)
-          localStorage.setItem('desktopSkills', JSON.stringify(installedSkills))
+        if (isSkillHubSkill(skill)) {
+          await skillsController.installSkillFromHub({
+            title: skill.name,
+            description: skill.description || '',
+            repoUrl: skill.source
+          })
+        } else {
+          const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]')
+          const skillExists = installedSkills.some((s: MarketplaceSkill) => s.id === skill.id)
+          
+          if (!skillExists) {
+            installedSkills.push(skill)
+            localStorage.setItem('desktopSkills', JSON.stringify(installedSkills))
+          }
         }
 
         settingsStore.setState((state) => ({
@@ -356,7 +364,6 @@ export const SkillsSection: FC = () => {
           },
         }))
         
-        toast.success(t('Skill installed: {{name}}', { name: skill.name }))
         await fetchSkills()
       } catch (error) {
         toastError(t('Failed to install skill'))

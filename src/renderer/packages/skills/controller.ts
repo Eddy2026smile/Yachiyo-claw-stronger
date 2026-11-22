@@ -794,6 +794,31 @@ interface SkillUpdateResult {
   error?: string
 }
 
+export async function installSkillFromHub(item: {
+  title: string
+  description: string
+  repoUrl: string
+}) {
+  try {
+    // Try to fetch SKILL.md from GitHub
+    const mdUrl = `${item.repoUrl.replace('github.com', 'raw.githubusercontent.com')}/main/SKILL.md`
+    const response = await fetch(mdUrl)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
+    const skillMarkdown = await response.text()
+    localStorage.setItem(`desktopSkills.${item.title}`, skillMarkdown)
+    toast.success(t('Skill installed: {{name}}', { name: item.title }))
+  } catch (error) {
+    // Fallback: Create a basic SKILL.md from the item metadata
+    const fallbackMarkdown = `# ${item.title}\n\n${item.description}\n\n[Repository](${item.repoUrl})`
+    localStorage.setItem(`desktopSkills.${item.title}`, fallbackMarkdown)
+    toast.success(t('Skill installed (basic version): {{name}}', { name: item.title }))
+  }
+}
+
 export const skillsController = {
   async saveSkill(metadata: SkillMetadata, body: string): Promise<SkillInstallResult> {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(metadata.name) || !metadata.description.trim() || !body.trim()) {
