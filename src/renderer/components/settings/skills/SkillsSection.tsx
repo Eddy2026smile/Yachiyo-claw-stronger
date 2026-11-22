@@ -37,6 +37,7 @@ import { ScalableIcon } from '@/components/common/ScalableIcon'
 import { useSkillTranslation } from '@/hooks/useSkillTranslation'
 import { skillsController } from '@/packages/skills/controller'
 import { toastError } from '@/packages/toast'
+import { Capacitor } from '@capacitor/core'
 import platform from '@/platform'
 import { settingsStore, useSettingsStore } from '@/stores/settingsStore'
 import GitHubInstallModal, { type DetectedSkill } from './GitHubInstallModal'
@@ -328,7 +329,7 @@ export const SkillsSection: FC = () => {
 
   const marketplaceSkills = useMemo(() => {
     const baseSkills = marketplaceResults ?? SKILLS_POPULAR.slice(0, 8).map(registrySkill)
-    if (platform.type !== 'mobile') {
+    if (!Capacitor.isNativePlatform()) {
       const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]') as MarketplaceSkill[]
       return [...baseSkills, ...installedSkills]
     }
@@ -585,7 +586,7 @@ export const SkillsSection: FC = () => {
               const expectedNames = [skill.skillId, skill.slug, skill.id.split('/').at(-1)]
                 .filter((name): name is string => Boolean(name))
                 .map((name) => name.toLowerCase())
-              const installed = platform.type === 'mobile'
+              const installed = Capacitor.isNativePlatform()
                 ? userSkills.some((item) => expectedNames.includes(item.name.toLowerCase()))
                 : JSON.parse(localStorage.getItem('desktopSkills') || '[]')
                     .some((s: MarketplaceSkill) => s.id === skill.id)
@@ -611,7 +612,7 @@ export const SkillsSection: FC = () => {
                         onClick={async (e) => {
                           e.stopPropagation()
                           if (installed) return
-                          if (platform.type === 'mobile') {
+                          if (Capacitor.isNativePlatform()) {
                             void installMarketplaceSkill(skill)
                           } else {
                             try {
@@ -649,7 +650,7 @@ export const SkillsSection: FC = () => {
         className="mb-3"
         right={
           <>
-            {platform.type !== 'mobile' && (
+            {!Capacitor.isNativePlatform() && (
               <Tooltip label={t('Open Skills Folder')} withArrow openDelay={300}>
                 <ActionIcon variant="subtle" size="sm" color="gray" onClick={() => void handleOpenFolder()}>
                   <ScalableIcon icon={IconFolderOpen} size={16} />
@@ -672,7 +673,7 @@ export const SkillsSection: FC = () => {
       {userSkills.length === 0 ? (
         <EmptyState
           onAddClick={skillsSpotlight.open}
-          onOpenFolder={platform.type === 'mobile' ? undefined : () => void handleOpenFolder()}
+          onOpenFolder={Capacitor.isNativePlatform() ? undefined : () => void handleOpenFolder()}
         />
       ) : (
         <SimpleGrid type="container" cols={{ base: 1, '450px': 2, '800px': 3, '1200px': 4 }}>
