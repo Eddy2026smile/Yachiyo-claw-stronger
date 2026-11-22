@@ -1,3 +1,4 @@
+process.env.NODE_ENV = 'test'
 import type { MCPSecretRefValue } from '@shared/types/mcp'
 import { describe, expect, it, vi } from 'vitest'
 import {
