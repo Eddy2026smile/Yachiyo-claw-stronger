@@ -309,7 +309,10 @@ const SkillsSpotlight: FC<{
               },
             }
           })
-          toast.success(t('Installed "{{name}}"', { name: result.skillName }))
+          toast.success(t('Installed "{{name}}"', { name: result.skillName }), {
+            position: 'bottom-center',
+            duration: 3000
+          })
           props.onInstallComplete()
         } else {
           toastError(result.error || t('Installation failed'))
@@ -346,7 +349,9 @@ const SkillsSpotlight: FC<{
           description: details,
           title: `${label}\n${details}`,
           onClick: () => {
-            void handleInstall(entry)
+            void handleInstall(entry).then(() => {
+              skillsSpotlight.close()
+            })
           },
           leftSection: <Avatar name={entry.name} color="initials" size={20} src={entry.icon} />,
           rightSection: entryInstalled ? (
@@ -405,7 +410,9 @@ const SkillsSpotlight: FC<{
             description: details,
             title: `${label}\n${details}`,
             onClick: () => {
-              void handleInstall(skill)
+              void handleInstall(skill).then(() => {
+                skillsSpotlight.close()
+              })
             },
             leftSection: <Avatar name={skill.name} color="initials" size={20} />,
             rightSection: skillInstalled ? (
