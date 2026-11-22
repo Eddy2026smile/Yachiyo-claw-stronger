@@ -3,7 +3,8 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { SkillsSection } from '@/components/settings/skills'
 import { Capacitor } from '@capacitor/core'
-import { toastSuccess } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
+import { installMarketplaceSkill } from '@/lib/skills'
 
 export const Route = createFileRoute('/settings/skills')({
   component: RouteComponent,
@@ -19,7 +20,7 @@ export function RouteComponent() {
     } else {
       // Desktop/web handling
       localStorage.setItem(`skill-${skill.id}`, JSON.stringify(skill))
-      toastSuccess(t('Skill installed successfully'))
+      toast.success(t('Skill installed successfully'))
     }
   }
 
