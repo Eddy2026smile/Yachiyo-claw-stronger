@@ -277,7 +277,10 @@ export const SkillsSection: FC = () => {
 
   const parseGitHubRepo = useCallback((url: string): { owner: string; repo: string } | null => {
     const trimmed = url.trim()
-    const match = trimmed.match(/^(?:https?:\/\/)?(?:www\.)?github\.com\/([\w.-]+)\/([\w.-]+?)(?:\.git)?(?:\/|$)/i)
+    // Support both github.com and raw.githubusercontent.com URLs
+    const match = trimmed.match(
+      /^(?:https?:\/\/)?(?:www\.)?(?:github\.com|raw\.githubusercontent\.com)\/([\w.-]+)\/([\w.-]+?)(?:\/|\.git|$)/i
+    )
     if (!match) return null
     return { owner: match[1], repo: match[2] }
   }, [])
@@ -291,17 +294,41 @@ export const SkillsSection: FC = () => {
 
     setScanning(true)
     try {
-      const discovered = await skillsController.scanRepo(parsed.owner, parsed.repo)
+      let discovered: DetectedSkill[] = []
+      
+      if (Capacitor.isNativePlatform()) {
+        discovered = await skillsController.scanRepo(parsed.owner, parsed.repo)
+      } else {
+        // On web/desktop, use proxy endpoint to avoid CORS
+        const response = await fetch(`/proxy/github/repos/${parsed.owner}/${parsed.repo}/contents?recursive=1`)
+        if (!response.ok) throw new Error(`GitHub API ${response.status}`)
+        
+        const contents = await response.json()
+        discovered = contents
+          .filter((file: any) => 
+            file.type === 'file' && 
+            file.name.toUpperCase() === 'SKILL.MD'
+          )
+          .map((file: any) => ({
+            name: file.path.split('/').slice(-2, -1)[0] || parsed.repo,
+            path: file.path,
+            downloadUrl: file.download_url,
+            description: 'GitHub Skill',
+            repo: `${parsed.owner}/${parsed.repo}`
+          }))
+      }
+
       setDetectedSkills(discovered)
       setRepoInfo(parsed)
 
       if (!discovered.length) {
-        toastError(t('No skills found in this repository'))
+        toast.info(t('No SKILL.md files found. Check the repository structure.'))
         return
       }
 
       setInstallModalOpen(true)
     } catch (error) {
+      console.error('Scan error:', error)
       toastError(error instanceof Error ? error.message : t('Failed to scan repository'))
     } finally {
       setScanning(false)

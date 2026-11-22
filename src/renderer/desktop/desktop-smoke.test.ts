@@ -63,12 +63,15 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(skillsSection).toContain('(s.slug && s.slug === skill.slug)')
   })
 
-  it('handles GitHub 404 errors gracefully in GitHubInstallModal', () => {
-    const modal = readFileSync(
-      join(process.cwd(), 'src/renderer/components/settings/skills/GitHubInstallModal.tsx'),
+  it('handles GitHub repository scanning on desktop and web', () => {
+    const skillsSection = readFileSync(
+      join(process.cwd(), 'src/renderer/components/settings/skills/SkillsSection.tsx'),
       'utf8'
     )
-    expect(modal).toContain('(error as any)?.response?.status !== 404')
+    expect(skillsSection).toContain('Capacitor.isNativePlatform()')
+    expect(skillsSection).toContain('/proxy/github/repos/')
+    expect(skillsSection).toContain('file.name.toUpperCase() === \'SKILL.MD\'')
+    expect(skillsSection).toContain('No SKILL.md files found')
   })
 
   it('positions toasts above bottom navigation in flow-glass theme', () => {
