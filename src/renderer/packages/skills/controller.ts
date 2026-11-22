@@ -968,7 +968,13 @@ export const skillsController = {
     
     // Browser fallback using fetch()
     try {
-      const url = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${skillPath}/SKILL.md`
+      const normalizedSkillPath = skillPath.replace(/^\/+|\/+$/g, '')
+      const rawUrl = normalizedSkillPath.toLowerCase().endsWith('/skill.md') || normalizedSkillPath.toLowerCase() === 'skill.md'
+        ? `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${normalizedSkillPath}`
+        : `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${normalizedSkillPath}/SKILL.md`
+      const url = typeof window !== 'undefined' && !(window as any).Capacitor?.isNativePlatform?.()
+        ? `/proxy?url=${encodeURIComponent(rawUrl)}`
+        : rawUrl
       const response = await fetch(url)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const body = await response.text()
