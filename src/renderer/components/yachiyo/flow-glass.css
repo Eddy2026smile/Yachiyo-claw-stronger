@@ -51,6 +51,11 @@ html[data-yachiyo-appearance="flow-glass"] {
     radial-gradient(90% 45% at 100% 100%, rgba(175, 82, 222, 0.04), transparent 60%);
 }
 
+[data-sonner-toaster] {
+  bottom: 88px !important;
+  z-index: 9999 !important;
+}
+
 html[data-yachiyo-appearance="flow-glass"][data-theme="dark"] {
   --flow-blue: var(--chatbox-tint-brand, #0a84ff);
   --flow-nav-active-label: #409cff;

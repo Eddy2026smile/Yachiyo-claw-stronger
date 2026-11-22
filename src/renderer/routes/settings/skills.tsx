@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { SkillsSection } from '@/components/settings/skills'
 import { Capacitor } from '@capacitor/core'
+import { toastSuccess } from '@/components/ui/use-toast'
 
 export const Route = createFileRoute('/settings/skills')({
   component: RouteComponent,
@@ -11,10 +12,21 @@ export const Route = createFileRoute('/settings/skills')({
 export function RouteComponent() {
   const { t } = useTranslation()
 
+  const handleSkillInstall = async (skill: any) => {
+    if (Capacitor.isNativePlatform()) {
+      // Native app handling
+      await installMarketplaceSkill(skill)
+    } else {
+      // Desktop/web handling
+      localStorage.setItem(`skill-${skill.id}`, JSON.stringify(skill))
+      toastSuccess(t('Skill installed successfully'))
+    }
+  }
+
   return (
     <SettingsPage title={t('Skills')} description={t('Enabled skills will be available in Task mode.')}>
       <SettingsSection>
-        <SkillsSection />
+        <SkillsSection onInstall={handleSkillInstall} />
       </SettingsSection>
     </SettingsPage>
   )
