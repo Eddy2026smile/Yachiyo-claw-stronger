@@ -139,19 +139,19 @@ describe('Android Agent Tool Broker', () => {
   })
 
   it('searches MCP registry', async () => {
-    const results = await executeMcpRegistrySearch('test')
+    const results = await mcpRegistrySearch('test')
     expect(results).toHaveLength(1)
     expect(results[0].name).toBe('Test')
   })
 
   it('connects to MCP remote', async () => {
-    const result = await executeMcpConnectRemote('https://test')
+    const result = await mcpConnectRemote('https://test')
     expect(result.success).toBe(true)
     expect(result.workflowId).toBe('test-workflow')
   })
 
   it('polls MCP workflow status', async () => {
-    const status = await executeMcpPollStatus('test-workflow')
+    const status = await pollWorkflowStatus('test-workflow')
     expect(status).toBe('completed')
   })
 
