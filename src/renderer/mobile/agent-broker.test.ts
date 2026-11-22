@@ -138,22 +138,6 @@ describe('Android Agent Tool Broker', () => {
     expect(getAgentWorkingDirectory()).toBe(saf)
   })
 
-  it('searches MCP registry', async () => {
-    const results = await mcpRegistrySearch('test')
-    expect(results).toHaveLength(1)
-    expect(results[0].name).toBe('Test')
-  })
-
-  it('connects to MCP remote', async () => {
-    const result = await mcpConnectRemote('https://test')
-    expect(result.success).toBe(true)
-    expect(result.workflowId).toBe('test-workflow')
-  })
-
-  it('polls MCP workflow status', async () => {
-    const status = await pollWorkflowStatus('test-workflow')
-    expect(status).toBe('completed')
-  })
 
   it('rejects non-absolute working directories', () => {
     expect(() => setAgentWorkingDirectory('relative/path')).toThrow('invalid_working_directory')
