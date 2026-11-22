@@ -69,8 +69,8 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     )
     // Test GitHub URL parsing safety
     expect(skillsSection).toContain('new URL(normalizedUrl)')
-    expect(skillsSection).toContain('url.startsWith(\'https://github.com\')')
-    expect(skillsSection).toContain('url.includes(\'/proxy/github.com/\')')
+    expect(skillsSection).toContain('parsed.hostname.includes(\'github.com\')')
+    expect(skillsSection).toContain('fetch(`/proxy?url=${encodeURIComponent(treeUrl)}`)')
     
     // Test SKILL.md discovery patterns
     expect(skillsSection).toContain('SKILL.md')
