@@ -69,13 +69,41 @@ Common type errors to watch for:
 - Check memory usage during long sessions  
 - Document known issues and workarounds  
 
-## 8. Build Workflows  
-- Configure Android debug/release builds  
-- Set up desktop build pipelines  
-- Document build requirements in BUILD_STRONGER.md  
-- Verify cross-platform consistency  
+## 8. Build Workflows
 
-## 9. Final Checks  
+### Android Build Pipeline
+1. Run `pnpm mobile:sync:android` to sync assets
+2. Build with `pnpm mobile:android` for development
+3. Production APK builds are handled through GitHub Actions
+4. Artifacts are uploaded on push to main
+
+### Desktop Web Build Pipeline
+1. Typecheck with `pnpm check:desktop`
+2. Run tests with `pnpm test:desktop`
+3. Build production bundle with `pnpm build:desktop`
+4. Artifacts are automatically uploaded on push to main
+5. Serve locally for testing with `pnpm serve:web`
+
+### Verification Steps
+- Run `pnpm check` to verify 0 type errors
+- Run `pnpm test` for full test coverage
+- Commit changes with descriptive messages
+
+## 9. Artifact Handling
+
+### Android APKs
+- Built through GitHub Actions
+- Signed with release keys
+- Uploaded as workflow artifacts
+- Deployed to internal test tracks
+
+### Desktop Web Bundle
+- Built as static assets
+- Uploaded as workflow artifacts
+- Served via CDN in production
+- Versioned alongside APKs
+
+## 10. Final Checks  
 - Run `pnpm check` for type errors  
 - Run `pnpm test` for test coverage  
 - Commit changes with descriptive messages  
