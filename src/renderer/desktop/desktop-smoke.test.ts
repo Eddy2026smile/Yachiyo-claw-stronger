@@ -47,6 +47,8 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     )
     expect(skillsSection).toContain('localStorage.setItem(\'desktopSkills\'')
     expect(skillsSection).toContain('toast.success(t(\'Installed "{{name}}"\'')
+    expect(skillsSection).toContain('toast.success(t(\'Skill deleted\')')
+    expect(skillsSection).toContain('toast.success(t(\'Update available for {{name}}\'')
   })
 
   it('prevents duplicate skill installations on desktop', () => {
