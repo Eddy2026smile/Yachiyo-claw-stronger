@@ -27,18 +27,25 @@ import {
 
 class MockSecureStorage {
   private values = new Map<string, string>()
+  private namespace: string
+
+  constructor(namespace?: string) {
+    this.namespace = namespace || 'default'
+  }
 
   async set(key: string, value: unknown): Promise<void> {
+    const namespacedKey = `${this.namespace}:${key}`
     // Skip actual encryption in tests
     if (process.env.NODE_ENV === 'test') {
-      this.values.set(key, JSON.stringify(value))
+      this.values.set(namespacedKey, JSON.stringify(value))
     } else {
-      this.values.set(key, await encryptMobileProtectedValue(JSON.stringify(value), 'mcp_remote'))
+      this.values.set(namespacedKey, await encryptMobileProtectedValue(JSON.stringify(value), 'mcp_remote'))
     }
   }
 
   async get<T = unknown>(key: string): Promise<T | null> {
-    const value = this.values.get(key)
+    const namespacedKey = `${this.namespace}:${key}`
+    const value = this.values.get(namespacedKey)
     if (!value) return null
     
     if (process.env.NODE_ENV === 'test') {
