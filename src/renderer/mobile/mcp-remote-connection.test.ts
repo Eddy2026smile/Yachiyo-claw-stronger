@@ -35,7 +35,7 @@ describe('Remote MCP Connection', () => {
       authToken: 'test-token-123'  
     })
     
-    const remoteFetch = createRemoteMcpFetch(mockFetch)
+    const remoteFetch = await createRemoteMcpFetch(mockFetch)
     await remoteFetch('/test')
     
     expect(mockFetch).toHaveBeenCalledWith(
