@@ -37,7 +37,7 @@ const CORE_ANDROID_SETTINGS_ROUTES = [
 
 export function shouldUseAndroidAppShell(platformType: string, buildPlatform: string): boolean {
   // Browser previews use web storage and transports while rendering the Android UI.
-  return (platformType === 'mobile' || platformType === 'web') && buildPlatform === 'android'
+  return (platformType === 'mobile' || platformType === 'web') && (buildPlatform === 'android' || buildPlatform === 'desktop')
 }
 
 export function resolveAndroidShellTab(pathname: string, workspaceTab?: 'tasks'): AndroidShellTab {
