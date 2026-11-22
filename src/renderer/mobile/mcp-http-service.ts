@@ -25,7 +25,7 @@ import {
   isYachiyoSecureStorageEnvelope
 } from '../platform/native/yachiyo_secure_storage'
 
-export class MockSecureStorage {
+class MockSecureStorage {
   private values = new Map<string, string>()
 
   async set(key: string, value: unknown): Promise<void> {
@@ -44,7 +44,6 @@ export class MockSecureStorage {
   }
 }
 
-// Keep this export for tests
 export { MockSecureStorage }
 
 const SecureStorage = process.env.NODE_ENV === 'test'
