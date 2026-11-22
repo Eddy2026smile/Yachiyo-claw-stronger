@@ -664,6 +664,10 @@ html[data-theme='dark'] .yachiyo-settings-stack-page {
   color: var(--yachiyo-text);
   background: transparent;
   text-align: left;
+  min-height: 0;
+  max-height: calc(88vh - 64px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .yachiyo-interactive-title strong,
