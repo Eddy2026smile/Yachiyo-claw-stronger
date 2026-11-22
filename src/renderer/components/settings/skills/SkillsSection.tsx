@@ -46,8 +46,8 @@ import { SKILLS_POPULAR, type SkillRegistryEntry } from './registries'
 
 function registrySkill(entry: SkillRegistryEntry): MarketplaceSkill {
   return {
-    id: `${entry.source}/${entry.skillId || entry.name}`,
-    skillId: entry.skillId || entry.name,
+    id: `${entry.source}/${entry.id}`,
+    skillId: entry.id,
     name: entry.title,
     installs: entry.installs || 0,
     source: entry.source,

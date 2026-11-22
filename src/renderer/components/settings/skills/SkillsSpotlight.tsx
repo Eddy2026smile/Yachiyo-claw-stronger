@@ -138,7 +138,7 @@ const SkillsSpotlight: FC<{
 
       const map = new Map<string, { title: string; description: string }>()
       SKILLS_POPULAR.forEach((entry, i) => {
-        map.set(entry.name, {
+        map.set(entry.id, {
           title: translated[i * 2],
           description: translated[i * 2 + 1],
         })
@@ -258,13 +258,16 @@ const SkillsSpotlight: FC<{
         return fromHomepage
       }
     }
-    if ('id' in entry && entry.id) {
-      const fromId = entry.id.split('/').pop()
-      if (fromId) {
-        return fromId
+    if ('id' in entry) {
+      if (typeof entry.id === 'string') {
+        const fromId = entry.id.split('/').pop()
+        if (fromId) {
+          return fromId
+        }
       }
+      return String(entry.id)
     }
-    return entry.name
+    return ''
   }, [])
 
   const isInstalled = useCallback(
@@ -287,9 +290,9 @@ const SkillsSpotlight: FC<{
           'id' in entry
             ? { ...entry, installs: entry.installs ?? 0 }
             : {
-                id: `${entry.source}/${entry.name}`,
-                skillId: getPrimarySkillKey(entry),
-                name: entry.name,
+                id: `${entry.source}/${entry.id}`,
+                skillId: entry.id,
+                name: entry.title,
                 installs: entry.installs ?? 0,
                 source: entry.source,
                 description: entry.description,
@@ -334,7 +337,7 @@ const SkillsSpotlight: FC<{
       actions: SKILLS_POPULAR.map((entry) => {
         const entryKey = getPrimarySkillKey(entry)
         const entryInstalled = isInstalled(entry)
-        const translated = translatedPopular.get(entry.name)
+        const translated = translatedPopular.get(entry.id)
         const translatedTitle = translated?.title && translated.title !== entry.title ? translated.title : ''
         const translatedDescription =
           translated?.description && translated.description !== entry.description ? translated.description : ''
@@ -344,7 +347,7 @@ const SkillsSpotlight: FC<{
             ? `${translatedDescription} · ${entry.description} · ${entry.source}`
             : `${entry.description} · ${entry.source}`
         return {
-          id: `popular-${entry.name}`,
+          id: `popular-${entry.id}`,
           label,
           description: details,
           title: `${label}\n${details}`,
@@ -353,7 +356,7 @@ const SkillsSpotlight: FC<{
               skillsSpotlight.close()
             })
           },
-          leftSection: <Avatar name={entry.name} color="initials" size={20} src={entry.icon} />,
+          leftSection: <Avatar name={entry.title} color="initials" size={20} src={entry.icon} />,
           rightSection: entryInstalled ? (
             <Badge size="xs" color="green">
               {t('Installed')}
