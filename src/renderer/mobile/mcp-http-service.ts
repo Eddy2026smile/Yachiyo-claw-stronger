@@ -19,7 +19,25 @@ export interface McpHttpResponse<T = unknown> {
   resumable: boolean
 }
 
-import { SecureStorage } from '../platform/storages.mobile-secure'
+class MockSecureStorage {
+  private values = new Map<string, unknown>()
+
+  async set(key: string, value: unknown): Promise<void> {
+    this.values.set(key, value)
+  }
+
+  async get<T = unknown>(key: string): Promise<T | null> {
+    return this.values.get(key) as T ?? null
+  }
+
+  async clear(): Promise<void> {
+    this.values.clear()
+  }
+}
+
+const SecureStorage = process.env.NODE_ENV === 'test'
+  ? MockSecureStorage
+  : (await import('../platform/storages.mobile-secure')).SecureStorage
 
 export interface McpPkceStateStore {
   set(state: string, value: { verifier: string; redirectUri: string; expiresAt: number }): Promise<void>

@@ -4,7 +4,7 @@ import {
   getRemoteMcpConnection,
   createRemoteMcpFetch
 } from './mcp-http-service'
-import { SecureStorage } from '../platform/storages.mobile-secure'
+process.env.NODE_ENV = 'test'
 
 describe('Remote MCP Connection', () => {
   beforeEach(async () => {
