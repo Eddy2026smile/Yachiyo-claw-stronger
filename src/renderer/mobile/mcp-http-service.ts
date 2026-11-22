@@ -62,13 +62,17 @@ export async function getRemoteMcpConnection(): Promise<RemoteMcpConnection | nu
   return remoteConnectionStorage.get('active') as Promise<RemoteMcpConnection | null>
 }
 
-export async function createRemoteMcpFetch(fetchImpl?: typeof fetch): typeof fetch {
+export async function createRemoteMcpFetch(fetchImpl?: typeof fetch): Promise<typeof fetch> {
   const conn = await getRemoteMcpConnection()
   if (!conn) throw new Error('No remote MCP connection configured')
 
   const baseFetch = fetchImpl || fetch
   return async (input: RequestInfo | URL, init?: RequestInit) => {
-    const url = new URL(input.toString(), conn.endpoint)
+    // Ensure the /mcp prefix is preserved
+    const baseUrl = conn.endpoint.endsWith('/mcp') 
+      ? conn.endpoint 
+      : `${conn.endpoint.replace(/\/$/, '')}/mcp`
+    const url = new URL(input.toString(), baseUrl)
     return baseFetch(url, {
       ...init,
       headers: {

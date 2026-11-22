@@ -39,7 +39,7 @@ describe('Remote MCP Connection', () => {
     await remoteFetch('/test')
     
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://desktop.example.com/mcp/test',
+      'https://desktop.example.com/test',
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: 'Bearer test-token-123'
