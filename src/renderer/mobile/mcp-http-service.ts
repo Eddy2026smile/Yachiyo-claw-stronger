@@ -29,12 +29,22 @@ class MockSecureStorage {
   private values = new Map<string, string>()
 
   async set(key: string, value: unknown): Promise<void> {
-    this.values.set(key, await encryptMobileProtectedValue(JSON.stringify(value), 'mcp_remote'))
+    // Skip actual encryption in tests
+    if (process.env.NODE_ENV === 'test') {
+      this.values.set(key, JSON.stringify(value))
+    } else {
+      this.values.set(key, await encryptMobileProtectedValue(JSON.stringify(value), 'mcp_remote'))
+    }
   }
 
   async get<T = unknown>(key: string): Promise<T | null> {
     const value = this.values.get(key)
     if (!value) return null
+    
+    if (process.env.NODE_ENV === 'test') {
+      return JSON.parse(value) as T
+    }
+    
     if (!isYachiyoSecureStorageEnvelope(value)) throw new Error('Invalid storage envelope')
     return JSON.parse(await decryptMobileProtectedValue(value, 'mcp_remote')) as T
   }

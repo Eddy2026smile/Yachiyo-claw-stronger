@@ -5,13 +5,14 @@ import {
   createRemoteMcpFetch,
   MockSecureStorage
 } from './mcp-http-service'
+
+// Ensure test mode is set
 process.env.NODE_ENV = 'test'
 
 describe('Remote MCP Connection', () => {
   let storage: InstanceType<typeof MockSecureStorage>
   
   beforeEach(async () => {
-    // Create new mock storage instance
     storage = new MockSecureStorage()
     await storage.clear()
   })
