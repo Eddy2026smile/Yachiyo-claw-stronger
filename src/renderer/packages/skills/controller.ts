@@ -758,8 +758,27 @@ interface SkillScriptResult {
   exitCode: number | null
 }
 
-/** Skills need the Android app's sandbox; the browser preview has no host for them. */
-const SKILLS_UNAVAILABLE = 'skills_require_the_android_app'
+const BROWSER_SKILLS_KEY = 'yachiyo-browser-skills-v1'
+
+function validBrowserSkills(value: unknown): MobileSkillRecord[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is MobileSkillRecord => {
+    const item = entry as Partial<MobileSkillRecord>
+    return !!item?.metadata && typeof item.metadata.name === 'string' && typeof item.body === 'string'
+  })
+}
+
+async function readBrowserSkills(): Promise<MobileSkillRecord[]> {
+  try {
+    return validBrowserSkills(JSON.parse(localStorage.getItem(BROWSER_SKILLS_KEY) || '[]'))
+  } catch {
+    return []
+  }
+}
+
+async function writeBrowserSkills(skills: MobileSkillRecord[]): Promise<void> {
+  localStorage.setItem(BROWSER_SKILLS_KEY, JSON.stringify(skills))
+}
 
 interface SkillInstallResult {
   success: boolean
@@ -776,16 +795,21 @@ interface SkillUpdateResult {
 
 export const skillsController = {
   async saveSkill(metadata: SkillMetadata, body: string): Promise<SkillInstallResult> {
-    if (platform.type !== 'mobile') {
-      return { success: false, skillName: metadata.name, error: 'Use the desktop skills directory' }
-    }
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(metadata.name) || !metadata.description.trim() || !body.trim()) {
       return { success: false, skillName: metadata.name, error: 'Invalid skill metadata or body' }
     }
-    const current = (await readMobileSkills()).filter((skill) => skill.metadata.name !== metadata.name)
-    const installedAt = new Date().toISOString()
-    current.push({ metadata, body: body.trim(), installedAt, executionMode: 'declarative', source: { type: 'local', installedAt } })
-    await writeMobileSkills(current)
+    
+    if (platform.type === 'mobile') {
+      const current = (await readMobileSkills()).filter((skill) => skill.metadata.name !== metadata.name)
+      const installedAt = new Date().toISOString()
+      current.push({ metadata, body: body.trim(), installedAt, executionMode: 'declarative', source: { type: 'local', installedAt } })
+      await writeMobileSkills(current)
+    } else {
+      const current = (await readBrowserSkills()).filter((skill) => skill.metadata.name !== metadata.name)
+      const installedAt = new Date().toISOString()
+      current.push({ metadata, body: body.trim(), installedAt, executionMode: 'declarative', source: { type: 'local', installedAt } })
+      await writeBrowserSkills(current)
+    }
     return { success: true, skillName: metadata.name }
   },
 
@@ -793,21 +817,34 @@ export const skillsController = {
     if (platform.type === 'mobile') {
       await resumePendingMobileSkillInstalls()
       return (await readMobileSkills()).map((skill) => ({
-          ...skill.metadata,
-          path: `mobile://skills/${skill.metadata.name}`,
-          isBuiltin: false,
-          bodyTokenEstimate: Math.ceil(skill.body.length / 4),
-          source: skill.source || {
-            type: skill.repo ? 'github' : 'local',
-            repo: skill.repo,
-            installedAt: skill.installedAt,
-            skillPath: skill.skillPath,
-          },
-          scriptExecutionEnabled: skill.executionMode === 'script-enabled',
-          signatureVerified: skill.installRecord?.signatureVerified,
-        }))
+        ...skill.metadata,
+        path: `mobile://skills/${skill.metadata.name}`,
+        isBuiltin: false,
+        bodyTokenEstimate: Math.ceil(skill.body.length / 4),
+        source: skill.source || {
+          type: skill.repo ? 'github' : 'local',
+          repo: skill.repo,
+          installedAt: skill.installedAt,
+          skillPath: skill.skillPath,
+        },
+        scriptExecutionEnabled: skill.executionMode === 'script-enabled',
+        signatureVerified: skill.installRecord?.signatureVerified,
+      }))
     }
-    return []
+    return (await readBrowserSkills()).map((skill) => ({
+      ...skill.metadata,
+      path: `browser://skills/${skill.metadata.name}`,
+      isBuiltin: false,
+      bodyTokenEstimate: Math.ceil(skill.body.length / 4),
+      source: skill.source || {
+        type: skill.repo ? 'github' : 'local',
+        repo: skill.repo,
+        installedAt: skill.installedAt,
+        skillPath: skill.skillPath,
+      },
+      scriptExecutionEnabled: false, // Scripts not supported in browser
+      signatureVerified: false,
+    }))
   },
 
   async loadSkill(name: string): Promise<{ metadata: SkillMetadata; body: string } | null> {
@@ -815,7 +852,8 @@ export const skillsController = {
       const skill = (await readMobileSkills()).find((candidate) => candidate.metadata.name === name)
       return skill ? { metadata: skill.metadata, body: skill.body } : null
     }
-    return null
+    const skill = (await readBrowserSkills()).find((candidate) => candidate.metadata.name === name)
+    return skill ? { metadata: skill.metadata, body: skill.body } : null
   },
 
   getSkillsDirectory(): Promise<string> {
@@ -895,9 +933,36 @@ export const skillsController = {
     return { success: true }
   },
 
-  installSkill(owner: string, repo: string, skillPath: string): Promise<SkillInstallResult> {
+  async installSkill(owner: string, repo: string, skillPath: string): Promise<SkillInstallResult> {
     if (platform.type === 'mobile') return installMobileGitHubSkill(owner, repo, skillPath)
-    return Promise.resolve({ success: false, skillName: skillPath, error: SKILLS_UNAVAILABLE })
+    
+    // Browser fallback using fetch()
+    try {
+      const url = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${skillPath}/SKILL.md`
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const body = await response.text()
+      const parsed = parseMobileSkill(body, skillPath)
+      if (!parsed) throw new Error('Invalid SKILL.md')
+      
+      const installedAt = new Date().toISOString()
+      const current = (await readBrowserSkills()).filter((skill) => skill.metadata.name !== parsed.metadata.name)
+      current.push({
+        ...parsed,
+        installedAt,
+        executionMode: 'declarative',
+        source: {
+          type: 'github',
+          repo: `${owner}/${repo}`,
+          skillPath,
+          installedAt
+        }
+      })
+      await writeBrowserSkills(current)
+      return { success: true, skillName: parsed.metadata.name }
+    } catch (error) {
+      return { success: false, skillName: skillPath, error: error instanceof Error ? error.message : String(error) }
+    }
   },
 
   async installMarketplaceSkill(skill: MarketplaceSkill): Promise<SkillInstallResult> {
@@ -918,15 +983,54 @@ export const skillsController = {
         return { success: false, skillName: skill.name, error: error instanceof Error ? error.message : String(error) }
       }
     }
-    return { success: false, skillName: skill.name, error: SKILLS_UNAVAILABLE }
+
+    // Browser fallback
+    if (isSkillHubSkill(skill)) {
+      return { success: false, skillName: skill.name, error: 'SkillHub skills require the mobile app' }
+    }
+    
+    const location = parseMarketplaceGitHubLocation(skill.source)
+    if (!location) {
+      return { success: false, skillName: skill.name, error: '此 Skill 来源未提供可安装的 GitHub 仓库。' }
+    }
+    
+    try {
+      const response = await fetch(`https://api.github.com/repos/${location.owner}/${location.repo}/contents/${location.suggestedPath}/SKILL.md`)
+      if (!response.ok) throw new Error(`GitHub API HTTP ${response.status}`)
+      const data = await response.json()
+      if (data.type !== 'file' || !data.content) throw new Error('Invalid GitHub response')
+      
+      const body = atob(data.content.replace(/\s/g, ''))
+      const parsed = parseMobileSkill(body, skill.name)
+      if (!parsed) throw new Error('Invalid SKILL.md')
+      
+      const installedAt = new Date().toISOString()
+      const current = (await readBrowserSkills()).filter((skill) => skill.metadata.name !== parsed.metadata.name)
+      current.push({
+        ...parsed,
+        installedAt,
+        executionMode: 'declarative',
+        source: {
+          type: 'github',
+          repo: `${location.owner}/${location.repo}`,
+          skillPath: location.suggestedPath,
+          installedAt
+        }
+      })
+      await writeBrowserSkills(current)
+      return { success: true, skillName: parsed.metadata.name }
+    } catch (error) {
+      return { success: false, skillName: skill.name, error: error instanceof Error ? error.message : String(error) }
+    }
   },
 
   async deleteSkill(name: string): Promise<{ success: boolean; error?: string }> {
     if (platform.type === 'mobile') {
       await writeMobileSkills((await readMobileSkills()).filter((skill) => skill.metadata.name !== name))
-      return { success: true }
+    } else {
+      await writeBrowserSkills((await readBrowserSkills()).filter((skill) => skill.metadata.name !== name))
     }
-    return { success: false, error: SKILLS_UNAVAILABLE }
+    return { success: true }
   },
 
   scanRepo(owner: string, repo: string): Promise<Array<{ name: string; path: string; description?: string }>> {
