@@ -68,7 +68,7 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       'utf8'
     )
     // Test GitHub URL parsing safety
-    expect(skillsSection).toContain('new URL(url)')
+    expect(skillsSection).toContain('new URL(normalizedUrl)')
     expect(skillsSection).toContain('url.startsWith(\'https://github.com\')')
     expect(skillsSection).toContain('url.includes(\'/proxy/github.com/\')')
     
