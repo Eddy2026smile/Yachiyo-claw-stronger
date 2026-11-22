@@ -7,7 +7,8 @@ describe('MCP Proxy', () => {
     const req = new Request('http://localhost:8080/mcp', {
       method: 'POST'
     })
-    await expect(proxy.handle(req)).rejects.toThrow('Unauthorized')
+    const res = await proxy.handle(req)
+    expect(res.status).toBe(401)
   })
 
   it('should proxy requests with valid auth', async () => {

@@ -17,7 +17,7 @@ export function createMCPProxy(secret: string): MCPProxy {
       try {
         const response = await ofetch.raw('https://mcp.modelcontextprotocol.org/v1', {
           method: request.method,
-          headers: Object.fromEntries(Array.from(request.headers.entries())),
+          headers: (() => { const h: Record<string, string> = {}; request.headers.forEach((v, k) => { h[k] = v }); return h })(),
           body: await request.text()
         })
 
