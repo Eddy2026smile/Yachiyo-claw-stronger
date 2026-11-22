@@ -2,11 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { 
   saveRemoteMcpConnection,
   getRemoteMcpConnection,
-  createRemoteMcpFetch
+  createRemoteMcpFetch,
+  MockSecureStorage
 } from './mcp-http-service'
 process.env.NODE_ENV = 'test'
 
 describe('Remote MCP Connection', () => {
+  const SecureStorage = MockSecureStorage
   beforeEach(async () => {
     // Clear storage between tests
     const storage = new SecureStorage('mcp_remote_connection')
