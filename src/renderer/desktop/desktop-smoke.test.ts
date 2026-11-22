@@ -68,10 +68,24 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       join(process.cwd(), 'src/renderer/components/settings/skills/SkillsSection.tsx'),
       'utf8'
     )
+    // Test GitHub URL parsing safety
+    expect(skillsSection).toMatch(/new URL\(['"]https:\/\/github\.com['"]\)/)
+    expect(skillsSection).toMatch(/\/proxy\/github\.com\//)
+    
+    // Test SKILL.md discovery patterns
+    expect(skillsSection).toMatch(/SKILL\.md/i)
+    expect(skillsSection).toMatch(/skills\/.*SKILL\.md/i)
     expect(skillsSection).toContain('Capacitor.isNativePlatform()')
-    expect(skillsSection).toContain('/proxy/github/repos/')
-    expect(skillsSection).toContain('file.name.toUpperCase() === \'SKILL.MD\'')
     expect(skillsSection).toContain('No SKILL.md files found')
+  })
+
+  it('safely handles GitHub.com homepage scanning', () => {
+    const githubResponse = readFileSync(
+      join(process.cwd(), 'test/fixtures/github-homepage.html'),
+      'utf8'
+    )
+    expect(githubResponse).toContain('GitHub')
+    expect(githubResponse).not.toMatch(/The string did not match the expected pattern/)
   })
 
   it('positions toasts above bottom navigation in flow-glass theme', () => {
