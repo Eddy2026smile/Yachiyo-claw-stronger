@@ -289,7 +289,7 @@ const SkillsSpotlight: FC<{
         const payload: MarketplaceSkill = {
           id: `${entry.source}/${entry.id}`,
           skillId: entry.id,
-          name: entry.title,
+          name: 'title' in entry ? entry.title : entry.name,
           installs: entry.installs ?? 0,
           source: entry.source,
           description: entry.description,
