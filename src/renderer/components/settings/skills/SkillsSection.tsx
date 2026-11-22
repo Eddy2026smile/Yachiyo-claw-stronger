@@ -573,7 +573,19 @@ export const SkillsSection: FC = () => {
                         loading={installingMarketplaceSkill === skill.id}
                         aria-label={String(installed ? t('已安装') : t('安装'))}
                         style={{ flex: '0 0 34px' }}
-                        onClick={() => void installMarketplaceSkill(skill)}
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          if (installed) return
+                          if (platform.type === 'mobile') {
+                            void installMarketplaceSkill(skill)
+                          } else {
+                            try {
+                              await installMarketplaceSkill(skill)
+                            } catch (err) {
+                              toastError(t('Failed to install skill'))
+                            }
+                          }
+                        }}
                       >
                         <ScalableIcon icon={installed ? IconCheck : IconDownload} size={16} />
                       </ActionIcon>

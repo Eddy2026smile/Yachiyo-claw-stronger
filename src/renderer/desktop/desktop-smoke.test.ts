@@ -39,4 +39,14 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(agentControls).toContain('// Skip configuration check and allow enabling Agent for any model')
     expect(agentControls).toContain('configured: true, // Force as configured')
   })
+
+  it('handles SkillHub item clicks properly on desktop', () => {
+    const skillsSection = readFileSync(
+      join(process.cwd(), 'src/renderer/components/settings/skills/SkillsSection.tsx'),
+      'utf8'
+    )
+    expect(skillsSection).toContain('platform.type === \'mobile\'')
+    expect(skillsSection).toContain('await installMarketplaceSkill(skill)')
+    expect(skillsSection).toContain('toastError(t(\'Failed to install skill\'))')
+  })
 })
