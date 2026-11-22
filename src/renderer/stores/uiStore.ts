@@ -15,7 +15,7 @@ export const uiStore = createStore(
       {
         toasts: [] as Toast[],
         quote: '',
-        realTheme: localStorage.getItem('initial-theme') === 'dark' ? 'dark' : ('light' as 'light' | 'dark'),
+        realTheme: globalThis.localStorage?.getItem?.('initial-theme') === 'dark' ? 'dark' : ('light' as 'light' | 'dark'),
         messageListElement: null as RefObject<HTMLDivElement> | null,
         messageScrolling: null as RefObject<VirtuosoHandle> | null,
         messageScrollingAtTop: false,

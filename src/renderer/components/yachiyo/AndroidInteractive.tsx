@@ -132,7 +132,7 @@ export function AndroidInteractive({
   const [cameraEnabled, setCameraEnabled] = useState(false)
   const [cameraFacing, setCameraFacing] = useState<'user' | 'environment'>('user')
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 })
-  const [background, setBackground] = useState(() => localStorage.getItem('yachiyo.interactive.background') || '')
+  const [background, setBackground] = useState(() => globalThis.localStorage?.getItem?.('yachiyo.interactive.background') || '')
   const [renderQuality, setRenderQuality] = useState(getLive2DRenderQuality)
   const [renderInfo, setRenderInfo] = useState<{ width: number; height: number; scale: number }>()
   const [live2dTransform, setLive2dTransform] = useState<Live2DTransform>(() => loadLive2DTransform(selectedModelId))
@@ -1261,7 +1261,7 @@ export function AndroidInteractive({
               reader.onload = () => {
                 const value = String(reader.result || '')
                 setBackground(value)
-                localStorage.setItem('yachiyo.interactive.background', value)
+                globalThis.localStorage?.setItem?.('yachiyo.interactive.background', value)
               }
               reader.readAsDataURL(file)
             }}
