@@ -328,10 +328,25 @@ export const SkillsSection: FC = () => {
   }, [marketplaceQuery])
 
   const marketplaceSkills = useMemo(() => {
-    const baseSkills = marketplaceResults ?? SKILLS_POPULAR.slice(0, 8).map(registrySkill)
+    const seen = new Set<string>()
+    const baseSkills = (marketplaceResults ?? SKILLS_POPULAR.slice(0, 8).map(registrySkill))
+      .filter(skill => {
+        const key = `${skill.slug || ''}|${skill.name}|${skill.source || ''}`.toLowerCase()
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+
     if (!Capacitor.isNativePlatform()) {
       const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]') as MarketplaceSkill[]
-      return [...baseSkills, ...installedSkills]
+      installedSkills.forEach(skill => {
+        const key = `${skill.slug || ''}|${skill.name}|${skill.source || ''}`.toLowerCase()
+        seen.add(key)
+      })
+      return [...baseSkills, ...installedSkills.filter(skill => {
+        const key = `${skill.slug || ''}|${skill.name}|${skill.source || ''}`.toLowerCase()
+        return !seen.has(key)
+      })]
     }
     return baseSkills
   }, [marketplaceResults])
