@@ -34,6 +34,24 @@ class MemoryCheckpointStorage implements AgentCheckpointStorage {
 
 describe('Android Agent Tool Broker', () => {
   beforeAll(() => {
+    vi.mock('@/shared/mcp/mcp_registry', () => ({
+      mcpRegistrySearch: vi.fn().mockResolvedValue([{
+        id: 'test',
+        name: 'Test',
+        description: 'Test entry',
+        endpoint: 'https://test',
+        capabilities: ['search']
+      }])
+    }))
+    vi.mock('@/shared/mcp/mcp_remote', () => ({
+      mcpConnectRemote: vi.fn().mockResolvedValue({
+        success: true,
+        workflowId: 'test-workflow'
+      })
+    }))
+    vi.mock('@/shared/mcp/mcp_workflow', () => ({
+      pollWorkflowStatus: vi.fn().mockResolvedValue('completed')
+    }))
     const values = new Map<string, string>()
     vi.stubGlobal('localStorage', {
       clear: () => values.clear(),
@@ -118,6 +136,23 @@ describe('Android Agent Tool Broker', () => {
     const saf = 'content://com.android.externalstorage.documents/tree/primary%3AProject'
     setAgentWorkingDirectory(saf)
     expect(getAgentWorkingDirectory()).toBe(saf)
+  })
+
+  it('searches MCP registry', async () => {
+    const results = await executeMcpRegistrySearch('test')
+    expect(results).toHaveLength(1)
+    expect(results[0].name).toBe('Test')
+  })
+
+  it('connects to MCP remote', async () => {
+    const result = await executeMcpConnectRemote('https://test')
+    expect(result.success).toBe(true)
+    expect(result.workflowId).toBe('test-workflow')
+  })
+
+  it('polls MCP workflow status', async () => {
+    const status = await executeMcpPollStatus('test-workflow')
+    expect(status).toBe('completed')
   })
 
   it('rejects non-absolute working directories', () => {
