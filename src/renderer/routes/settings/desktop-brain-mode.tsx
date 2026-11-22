@@ -1,6 +1,6 @@
 import { SettingsPage, SettingsSection } from '@/components/settings/SettingsPage'
 import { createFileRoute } from '@tanstack/react-router'
-import { DesktopBrainModeSettings } from '@/components/settings/DesktopBrainModeSettings'
+import { DesktopBrainModeSettings } from '@components/settings/DesktopBrainModeSettings'
 
 export const Route = createFileRoute('/settings/desktop-brain-mode')({
   component: RouteComponent,
