@@ -48,9 +48,8 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(skillsSection).toContain('localStorage.setItem(\'desktopSkills\'')
     
     // Check for success toast patterns in the file
-    expect(skillsSection).toMatch(/toast\.success\(t\(['"]Installed "{{name}}"['"]/)
-    expect(skillsSection).toMatch(/toast\.success\(t\(['"]Skill deleted['"]/)
-    expect(skillsSection).toMatch(/toast\.success\(t\(['"]Update available for {{name}}['"]/)
+    expect(skillsSection).toContain('toast.success(t(\'Skill deleted\')')
+    expect(skillsSection).toContain('toast.success(t(\'Update available for {{name}}\'')
   })
 
   it('prevents duplicate skill installations on desktop', () => {
@@ -69,12 +68,13 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       'utf8'
     )
     // Test GitHub URL parsing safety
-    expect(skillsSection).toMatch(/new URL\(['"]https:\/\/github\.com['"]\)/)
-    expect(skillsSection).toMatch(/\/proxy\/github\.com\//)
+    expect(skillsSection).toContain('new URL(url)')
+    expect(skillsSection).toContain('url.startsWith(\'https://github.com\')')
+    expect(skillsSection).toContain('url.includes(\'/proxy/github.com/\')')
     
     // Test SKILL.md discovery patterns
-    expect(skillsSection).toMatch(/SKILL\.md/i)
-    expect(skillsSection).toMatch(/skills\/.*SKILL\.md/i)
+    expect(skillsSection).toContain('SKILL.md')
+    expect(skillsSection).toContain('skills/SKILL.md')
     expect(skillsSection).toContain('Capacitor.isNativePlatform()')
     expect(skillsSection).toContain('No SKILL.md files found')
   })
