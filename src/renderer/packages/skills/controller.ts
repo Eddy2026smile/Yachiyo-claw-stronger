@@ -296,14 +296,6 @@ async function prepareGitHubSkillInstall(
   }
 }
 
-function isSkillHubSkill(skill: MarketplaceSkill): boolean {
-  try {
-    const host = new URL(skill.source).hostname.toLowerCase()
-    return host === 'skillhub.cn' || host.endsWith('.skillhub.cn')
-  } catch {
-    return skill.source.startsWith('skillhub:')
-  }
-}
 
 export interface MarketplaceGitHubLocation {
   owner: string
