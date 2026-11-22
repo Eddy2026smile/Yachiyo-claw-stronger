@@ -51,6 +51,6 @@ describe('Remote MCP Connection', () => {
         credentials: 'omit'
       }
     )
-    expect(mockFetch.mock.calls[0][0].toString()).toBe('https://desktop.example.com/mcp/test')
+    expect(mockFetch.mock.calls[0][0].toString()).toBe('https://desktop.example.com/test')
   })
 })
