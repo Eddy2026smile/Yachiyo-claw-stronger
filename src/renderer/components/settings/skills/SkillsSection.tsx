@@ -276,13 +276,33 @@ export const SkillsSection: FC = () => {
   }, [])
 
   const parseGitHubRepo = useCallback((url: string): { owner: string; repo: string } | null => {
-    const trimmed = url.trim()
-    // Support both github.com and raw.githubusercontent.com URLs
-    const match = trimmed.match(
-      /^(?:https?:\/\/)?(?:www\.)?(?:github\.com|raw\.githubusercontent\.com)\/([\w.-]+)\/([\w.-]+?)(?:\/|\.git|$)/i
-    )
-    if (!match) return null
-    return { owner: match[1], repo: match[2] }
+    try {
+      const trimmed = url.trim()
+      if (!trimmed) return null
+      
+      // Handle raw.githubusercontent.com URLs
+      if (trimmed.includes('raw.githubusercontent.com')) {
+        const parts = trimmed.split('/')
+        if (parts.length < 5) return null
+        return { owner: parts[3], repo: parts[4] }
+      }
+
+      // Handle github.com URLs
+      if (trimmed.includes('github.com')) {
+        const parsed = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`)
+        const pathParts = parsed.pathname.split('/').filter(Boolean)
+        if (pathParts.length < 2) return null
+        return { 
+          owner: pathParts[0], 
+          repo: pathParts[1].replace(/\.git$/, '') 
+        }
+      }
+
+      return null
+    } catch (error) {
+      console.error('Failed to parse GitHub URL:', error)
+      return null
+    }
   }, [])
 
   const handleScanRepo = useCallback(async () => {
@@ -305,17 +325,24 @@ export const SkillsSection: FC = () => {
         
         const contents = await response.json()
         discovered = contents
-          .filter((file: any) => 
-            file.type === 'file' && 
-            file.name.toUpperCase() === 'SKILL.MD'
-          )
-          .map((file: any) => ({
-            name: file.path.split('/').slice(-2, -1)[0] || parsed.repo,
-            path: file.path,
-            downloadUrl: file.download_url,
-            description: 'GitHub Skill',
-            repo: `${parsed.owner}/${parsed.repo}`
-          }))
+          .filter((file: any) => {
+            if (file.type !== 'file') return false
+            // Case-insensitive check for SKILL.md in any directory
+            const fileName = file.name.toLowerCase()
+            const pathParts = file.path.toLowerCase().split('/')
+            return fileName === 'skill.md' || pathParts.includes('skill.md')
+          })
+          .map((file: any) => {
+            const pathParts = file.path.split('/')
+            const dirName = pathParts.length > 1 ? pathParts[pathParts.length - 2] : parsed.repo
+            return {
+              name: dirName,
+              path: file.path,
+              downloadUrl: file.download_url,
+              description: 'GitHub Skill',
+              repo: `${parsed.owner}/${parsed.repo}`
+            }
+          })
       }
 
       setDetectedSkills(discovered)
@@ -329,7 +356,17 @@ export const SkillsSection: FC = () => {
       setInstallModalOpen(true)
     } catch (error) {
       console.error('Scan error:', error)
-      toastError(error instanceof Error ? error.message : t('Failed to scan repository'))
+      let errorMsg = t('Failed to scan repository')
+      if (error instanceof Error) {
+        if (error.message.includes('rate limit')) {
+          errorMsg = t('GitHub rate limit exceeded. Please try again later.')
+        } else if (error.message.includes('Not Found')) {
+          errorMsg = t('Repository not found. Please check the URL and permissions.')
+        } else {
+          errorMsg = error.message
+        }
+      }
+      toastError(errorMsg)
     } finally {
       setScanning(false)
     }
