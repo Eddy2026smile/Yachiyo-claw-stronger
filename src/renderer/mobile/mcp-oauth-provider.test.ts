@@ -118,9 +118,9 @@ describe('MobileMcpOAuthProvider', () => {
     
     // Test invalid protocols
     await expect(safeFetch('http://auth.example.test/token'))
-      .rejects.toThrow('mcp_oauth_unsafe_protocol: http:')
+      .rejects.toThrow('mcp_https_required')
     await expect(safeFetch('ftp://auth.example.test/token'))
-      .rejects.toThrow('mcp_oauth_unsafe_protocol: ftp:')
+      .rejects.toThrow('mcp_https_required')
       
     // Test invalid domains  
     await expect(safeFetch('https://evil.com/token'))
