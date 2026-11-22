@@ -2415,3 +2415,8 @@ html[data-yachiyo-appearance="flow-glass"][data-yachiyo-liquid-glass-quality="re
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
+
+[data-sonner-toaster] {
+  bottom: 88px !important;
+  z-index: 9999 !important;
+}
