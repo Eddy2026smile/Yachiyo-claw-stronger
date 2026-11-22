@@ -345,14 +345,14 @@ export const SkillsSection: FC = () => {
         const response = await fetch(`/proxy/github.com/repos/${parsed.owner}/${parsed.repo}/contents?recursive=1`)
         if (!response.ok) {
           if (response.status === 404) {
-            throw new Error(t('Repository not found. Please check the URL and permissions.'))
+            throw new Error(t('Repository not found. Please check the URL and permissions.') as string)
           }
           throw new Error(`GitHub API ${response.status}`)
         }
         
         const contents = await response.json()
         if (!Array.isArray(contents)) {
-          throw new Error(t('Unexpected response from GitHub API'))
+          throw new Error(t('Unexpected response from GitHub API') as string)
         }
 
         discovered = contents
@@ -372,7 +372,7 @@ export const SkillsSection: FC = () => {
               name: dirName,
               path: file.path,
               downloadUrl: file.download_url,
-              description: t('GitHub Skill'),
+              description: t('GitHub Skill') as string,
               repo: `${parsed.owner}/${parsed.repo}`
             }
           })
