@@ -74,7 +74,7 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     
     // Test SKILL.md discovery patterns
     expect(skillsSection).toContain('SKILL.md')
-    expect(skillsSection).toContain('skills/SKILL.md')
+    expect(skillsSection).toContain("/skill.md")
     expect(skillsSection).toContain('Capacitor.isNativePlatform()')
     expect(skillsSection).toContain('No SKILL.md files found')
   })
