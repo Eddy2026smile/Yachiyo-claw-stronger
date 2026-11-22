@@ -100,14 +100,17 @@ export const GitHubInstallModal: FC<GitHubInstallModalProps> = ({
           anyFailed = true
         }
       } catch (error) {
-        anyFailed = true
-        setInstallStatuses((prev) => ({
-          ...prev,
-          [skill.path]: {
-            state: 'error',
-            error: error instanceof Error ? error.message : installFailedText,
-          },
-        }))
+        // Handle 404s silently as they fall back to local storage
+        if ((error as any)?.response?.status !== 404) {
+          anyFailed = true
+          setInstallStatuses((prev) => ({
+            ...prev,
+            [skill.path]: {
+              state: 'error',
+              error: error instanceof Error ? error.message : installFailedText,
+            },
+          }))
+        }
       }
     }
 

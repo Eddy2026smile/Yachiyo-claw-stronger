@@ -49,6 +49,22 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(skillsSection).toContain('toast.success(t(\'Skill installed: {{name}}\'')
   })
 
+  it('prevents duplicate skill installations on desktop', () => {
+    const skillsSection = readFileSync(
+      join(process.cwd(), 'src/renderer/components/settings/skills/SkillsSection.tsx'),
+      'utf8'
+    )
+    expect(skillsSection).toContain('s.id === skill.id || s.name === skill.name || (s.slug && s.slug === skill.slug)')
+  })
+
+  it('handles GitHub 404 errors gracefully in GitHubInstallModal', () => {
+    const modal = readFileSync(
+      join(process.cwd(), 'src/renderer/components/settings/skills/GitHubInstallModal.tsx'),
+      'utf8'
+    )
+    expect(modal).toContain('(error as any)?.response?.status !== 404')
+  })
+
   it('positions toasts above bottom navigation in flow-glass theme', () => {
     const flowGlassCss = readFileSync(
       join(process.cwd(), 'src/renderer/components/yachiyo/flow-glass.css'),

@@ -349,11 +349,17 @@ export const SkillsSection: FC = () => {
           })
         } else {
           const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]')
-          const skillExists = installedSkills.some((s: MarketplaceSkill) => s.id === skill.id)
+          // Dedupe by id, name, and slug
+          const skillExists = installedSkills.some(
+            (s: MarketplaceSkill) => 
+              s.id === skill.id || 
+              s.name === skill.name || 
+              (s.slug && s.slug === skill.slug)
+          )
           
           if (!skillExists) {
-            installedSkills.push(skill)
-            localStorage.setItem('desktopSkills', JSON.stringify(installedSkills))
+            const updatedSkills = [...installedSkills, skill]
+            localStorage.setItem('desktopSkills', JSON.stringify(updatedSkills))
           }
         }
 
