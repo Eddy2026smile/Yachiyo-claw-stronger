@@ -1,33 +1,51 @@
 import { useState } from 'react'
-import { Stack, TextInput, SimpleGrid, Card, Text, CopyButton, Code } from '@mantine/core'
-import { MCPServerConfig, exampleMCPServers } from '@/desktop/mcp-transport'
+import { Stack, TextInput, Text, CopyButton, Switch, Alert } from '@mantine/core'
+import { IconInfoCircle } from '@tabler/icons-react'
 
 export function DesktopBrainModeSettings() {
-  const [tailscaleKey, setTailscaleKey] = useState('')
-  const [servers, setServers] = useState<MCPServerConfig[]>(exampleMCPServers)
+  const [isEnabled, setIsEnabled] = useState(false)
+  const tailscaleIp = '100.101.102.103' // Example Tailscale IP
+  const bearerToken = 'your-secret-token' // Example bearer token
+  const connectionString = `http://${tailscaleIp}:8080/mcp`
+  const authHeader = `Bearer ${bearerToken}`
 
   return (
     <Stack>
-      <TextInput
-        label="Tailscale Connection String"
-        value={tailscaleKey}
-        readOnly
-        rightSection={
-          <CopyButton value={tailscaleKey}>
-            {({ copy }) => <button onClick={copy}>Copy</button>}
-          </CopyButton>
-        }
+      <Switch
+        label="Enable Desktop Brain Mode"
+        checked={isEnabled}
+        onChange={(event) => setIsEnabled(event.currentTarget.checked)}
       />
-      <Text>Keep awake guidance: Use your OS power settings</Text>
 
-      <SimpleGrid cols={2}>
-        {servers.map((server) => (
-          <Card key={server.id}>
-            <Text>{server.name}</Text>
-            <Code>{server.command.join(' ')}</Code>
-          </Card>
-        ))}
-      </SimpleGrid>
+      {isEnabled && (
+        <>
+          <TextInput
+            label="Tailscale Connection String"
+            value={connectionString}
+            readOnly
+            rightSection={
+              <CopyButton value={connectionString}>
+                {({ copy }) => <button onClick={copy}>Copy</button>}
+              </CopyButton>
+            }
+          />
+
+          <TextInput
+            label="Authorization Header"
+            value={authHeader}
+            readOnly
+            rightSection={
+              <CopyButton value={authHeader}>
+                {({ copy }) => <button onClick={copy}>Copy</button>}
+              </CopyButton>
+            }
+          />
+
+          <Alert icon={<IconInfoCircle />} color="blue">
+            Keep awake guidance: Use your OS power settings to prevent sleep while in Desktop Brain Mode
+          </Alert>
+        </>
+      )}
     </Stack>
   )
 }
