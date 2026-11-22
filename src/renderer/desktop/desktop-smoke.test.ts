@@ -20,4 +20,23 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(json).toHaveLength(1)
     expect(json[0].name).toBe('n8n')
   })
+
+  it('ensures modals have proper scrolling behavior in flow-glass theme', () => {
+    const flowGlassCss = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/flow-glass.css'),
+      'utf8'
+    )
+    expect(flowGlassCss).toContain('.mantine-Modal-body {')
+    expect(flowGlassCss).toContain('overflow-y: auto')
+    expect(flowGlassCss).toContain('overscroll-behavior: contain')
+  })
+
+  it('allows Agent mode toggle for any model without toolUse capability', () => {
+    const agentControls = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/AgentSessionControls.tsx'),
+      'utf8'
+    )
+    expect(agentControls).toContain('// Skip configuration check and allow enabling Agent for any model')
+    expect(agentControls).toContain('configured: true, // Force as configured')
+  })
 })

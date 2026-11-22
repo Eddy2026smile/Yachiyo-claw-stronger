@@ -136,11 +136,14 @@ export function AgentSessionControls({
       await onToggle(false)
       return
     }
-    if (!config.configured) {
-      openSettings(true)
-      return
-    }
-    const next = saveAgentSessionConfig(sessionId, { enabled: true })
+    // Skip configuration check and allow enabling Agent for any model
+    const next = saveAgentSessionConfig(sessionId, { 
+      enabled: true,
+      configured: true, // Force as configured
+      backend: getAgentBackend(),
+      deviceControlEnabled: false, // Default to safe mode
+      approvalMode: 'manual' // Default to safest mode
+    })
     setConfig(next)
     await onToggle(true)
   }
