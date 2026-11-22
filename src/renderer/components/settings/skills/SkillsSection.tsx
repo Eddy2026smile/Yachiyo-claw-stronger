@@ -326,16 +326,46 @@ export const SkillsSection: FC = () => {
     }
   }, [marketplaceQuery])
 
-  const marketplaceSkills = marketplaceResults ?? SKILLS_POPULAR.slice(0, 8).map(registrySkill)
+  const marketplaceSkills = useMemo(() => {
+    const baseSkills = marketplaceResults ?? SKILLS_POPULAR.slice(0, 8).map(registrySkill)
+    if (platform.type !== 'mobile') {
+      const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]') as MarketplaceSkill[]
+      return [...baseSkills, ...installedSkills]
+    }
+    return baseSkills
+  }, [marketplaceResults])
 
   const installMarketplaceSkill = useCallback(
     async (skill: MarketplaceSkill) => {
       const key = skill.id || skill.skillId
       setInstallingMarketplaceSkill(key)
       try {
+        // On desktop/web, we store the skill info in localStorage
+        if (platform.type !== 'mobile') {
+          const installedSkills = JSON.parse(localStorage.getItem('desktopSkills') || '[]')
+          const skillExists = installedSkills.some((s: MarketplaceSkill) => s.id === skill.id)
+          
+          if (!skillExists) {
+            installedSkills.push(skill)
+            localStorage.setItem('desktopSkills', JSON.stringify(installedSkills))
+          }
+
+          settingsStore.setState((state) => ({
+            skills: {
+              ...state.skills,
+              enabledSkillNames: [...new Set([...state.skills.enabledSkillNames, skill.name])],
+            },
+          }))
+          
+          toast.success(t('Skill installed: {{name}}', { name: skill.name }))
+          await fetchSkills()
+          return
+        }
+
+        // Mobile installation remains unchanged
         const result = await skillsController.installMarketplaceSkill(skill)
         if (!result.success) {
-          toastError(result.error || 'Skill 安装失败')
+          toastError(result.error || t('Skill installation failed'))
           return
         }
         settingsStore.setState((state) => ({
@@ -346,13 +376,15 @@ export const SkillsSection: FC = () => {
               : [...state.skills.enabledSkillNames, result.skillName],
           },
         }))
-        toast.success(`已安装 ${result.skillName}`)
+        toast.success(t('Skill installed: {{name}}', { name: result.skillName }))
         await fetchSkills()
+      } catch (error) {
+        toastError(t('Failed to install skill'))
       } finally {
         setInstallingMarketplaceSkill(null)
       }
     },
-    [fetchSkills]
+    [fetchSkills, t]
   )
 
   const handleDeleteSkill = useCallback(
@@ -553,7 +585,10 @@ export const SkillsSection: FC = () => {
               const expectedNames = [skill.skillId, skill.slug, skill.id.split('/').at(-1)]
                 .filter((name): name is string => Boolean(name))
                 .map((name) => name.toLowerCase())
-              const installed = userSkills.some((item) => expectedNames.includes(item.name.toLowerCase()))
+              const installed = platform.type === 'mobile'
+                ? userSkills.some((item) => expectedNames.includes(item.name.toLowerCase()))
+                : JSON.parse(localStorage.getItem('desktopSkills') || '[]')
+                    .some((s: MarketplaceSkill) => s.id === skill.id)
               return (
                 <Paper key={skill.id} withBorder radius="md" p="sm">
                   <Flex justify="space-between" align="flex-start" gap="sm">
