@@ -1,6 +1,5 @@
 export interface SkillRegistryEntry {
-  name: string
-  skillId?: string
+  id: string
   title: string
   description: string
   source: string
@@ -11,7 +10,7 @@ export interface SkillRegistryEntry {
 
 export const SKILLS_POPULAR: SkillRegistryEntry[] = [
   {
-    name: 'find-skills',
+    id: 'find-skills',
     title: 'Find Skills',
     description: 'Discover and search for available agent skills from the ecosystem.',
     source: 'vercel-labs/skills',
@@ -20,7 +19,6 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
   },
   {
     name: 'vercel-react-best-practices',
-    skillId: 'react-best-practices',
     title: 'Vercel React Best Practices',
     description:
       'React and Next.js performance optimization guidelines from Vercel Engineering. Contains 40+ rules for ' +
@@ -28,15 +26,6 @@ export const SKILLS_POPULAR: SkillRegistryEntry[] = [
     source: 'vercel-labs/agent-skills',
     installs: 130500,
     homepage: 'https://skills.sh/vercel-labs/agent-skills/vercel-react-best-practices',
-  },
-  {
-    name: 'web-design-guidelines',
-    title: 'Web Design Guidelines',
-    description:
-      'Review UI code for Web Interface Guidelines compliance, accessibility standards, and design consistency.',
-    source: 'vercel-labs/agent-skills',
-    installs: 98000,
-    homepage: 'https://skills.sh/vercel-labs/agent-skills/web-design-guidelines',
   },
   {
     name: 'remotion-best-practices',
