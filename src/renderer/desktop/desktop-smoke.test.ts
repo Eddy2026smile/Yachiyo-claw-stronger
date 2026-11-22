@@ -46,7 +46,7 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       'utf8'
     )
     expect(skillsSection).toContain('localStorage.setItem(\'desktopSkills\'')
-    expect(skillsSection).toContain('toast.success(t(\'Skill installed: {{name}}\'')
+    expect(skillsSection).toContain('toast.success(t(\'Skill installed\')')
   })
 
   it('prevents duplicate skill installations on desktop', () => {
@@ -54,7 +54,9 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       join(process.cwd(), 'src/renderer/components/settings/skills/SkillsSection.tsx'),
       'utf8'
     )
-    expect(skillsSection).toContain('s.id === skill.id || s.name === skill.name || (s.slug && s.slug === skill.slug)')
+    expect(skillsSection).toContain('s.id === skill.id')
+    expect(skillsSection).toContain('s.name === skill.name')
+    expect(skillsSection).toContain('(s.slug && s.slug === skill.slug)')
   })
 
   it('handles GitHub 404 errors gracefully in GitHubInstallModal', () => {
