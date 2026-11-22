@@ -41,13 +41,12 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
   })
 
   it('handles SkillHub item clicks properly on desktop', () => {
-    const skillsRoute = readFileSync(
-      join(process.cwd(), 'src/renderer/routes/settings/skills.tsx'),
+    const skillsSection = readFileSync(
+      join(process.cwd(), 'src/renderer/components/settings/skills/SkillsSection.tsx'),
       'utf8'
     )
-    expect(skillsRoute).toContain('Capacitor.isNativePlatform()')
-    expect(skillsRoute).toContain('localStorage.setItem(`skill-${skill.id}`')
-    expect(skillsRoute).toContain('toastSuccess(t(\'Skill installed successfully\'))')
+    expect(skillsSection).toContain('localStorage.setItem(\'desktopSkills\'')
+    expect(skillsSection).toContain('toast.success(t(\'Skill installed: {{name}}\'')
   })
 
   it('positions toasts above bottom navigation in flow-glass theme', () => {
