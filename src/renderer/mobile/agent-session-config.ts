@@ -1,4 +1,5 @@
 import type { AgentBackend } from './agent-broker'
+import { Capacitor } from '@capacitor/core'
 import { getAgentBackend, setAgentBackend } from './agent-broker'
 import { getAgentWorkingDirectory } from './agent-broker'
 

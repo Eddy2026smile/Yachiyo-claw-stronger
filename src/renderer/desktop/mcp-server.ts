@@ -6,6 +6,7 @@ import { URL } from 'node:url'
 import { exec, execSync } from 'node:child_process'
 import crypto from 'node:crypto'
 import { McpHttpService } from '../mobile/mcp-http-service'
+import { getAgentSessionConfig } from '../mobile/agent-session-config'
 
 export interface DesktopMcpServer {
   start(): Promise<void>
