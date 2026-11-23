@@ -380,9 +380,9 @@ export function AgentSessionControls({
                   const checked = event.currentTarget.checked
                   setDesktopControlEnabled(checked)
                   saveAgentSessionConfig(sessionId, {
-                    ...(config as any),
+                    ...config,
                     desktopControlEnabled: checked,
-                  } as any)
+                  })
                 }}
               />
             <Switch
