@@ -218,10 +218,10 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
 
     // Render component
     const { getByText, getByLabelText, getByRole } = render(
-      <AgentSessionControls 
-        sessionId="test-session" 
-        enabled={true} 
-        onToggle={() => {}} 
+      <AgentSessionControls
+        sessionId="test-session"
+        enabled={true}
+        onToggle={async () => {}}
       />
     )
 
