@@ -239,10 +239,22 @@ export function createDesktopMcpServer(
               result = execSync(`adb shell ${args[0]}`, { encoding: 'utf8' })
               break
             case 'fastboot_devices':
-              result = execSync('fastboot devices', { encoding: 'utf8', env: { PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH } })
+              result = execSync('fastboot devices', { 
+                encoding: 'utf8', 
+                env: { 
+                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH,
+                  ANDROID_HOME: process.env.ANDROID_HOME || ''
+                } 
+              })
               break
             case 'fastboot_getvar':
-              result = execSync('fastboot getvar all', { encoding: 'utf8', env: { PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH } })
+              result = execSync('fastboot getvar all', { 
+                encoding: 'utf8', 
+                env: { 
+                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH,
+                  ANDROID_HOME: process.env.ANDROID_HOME || ''
+                } 
+              })
               break
             default:
               throw new Error('Unknown tool')

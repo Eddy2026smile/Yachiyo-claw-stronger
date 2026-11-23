@@ -109,7 +109,7 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(agentControls).toContain('IconShieldLock')
   })
 
-  it('exposes Android ADB tools via MCP server', () => {
+  it('exposes Android ADB and Fastboot tools via MCP server with proper PATH', () => {
     const mcpServer = readFileSync(
       join(process.cwd(), 'src/renderer/desktop/mcp-server.ts'),
       'utf8'
@@ -123,5 +123,29 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(mcpServer).toContain('adb shell input text')
     expect(mcpServer).toContain('adb logcat -d -t 100')
     expect(mcpServer).toContain('adb install -r')
+    expect(mcpServer).toContain('/opt/homebrew/bin:/usr/local/bin')
+    expect(mcpServer).toContain('ANDROID_HOME')
+    expect(mcpServer).toContain('/desktop-mcp-autoconfig')
+    expect(mcpServer).toMatch(/127\.0\.0\.1.*403/)
+  })
+
+  it('allows phone control on desktop and properly updates agent presets', () => {
+    const agentControls = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/AgentSessionControls.tsx'),
+      'utf8'
+    )
+    expect(agentControls).toContain('Capacitor.isNativePlatform() ? false : false')
+    expect(agentControls).toContain('sessionsStore.updateSession')
+    expect(agentControls).toContain('systemPrompt: copilot.systemPrompt')
+    expect(agentControls).toContain('characterId: copilot.characterId')
+  })
+
+  it('has desktop MCP server with proper ADB/Fastboot PATH', () => {
+    const mcpServer = readFileSync(
+      join(process.cwd(), 'src/renderer/desktop/mcp-server.ts'),
+      'utf8'
+    )
+    expect(mcpServer).toContain('/opt/homebrew/bin:/usr/local/bin')
+    expect(mcpServer).toContain('ANDROID_HOME')
   })
 })

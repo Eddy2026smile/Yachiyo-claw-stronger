@@ -1,22 +1,46 @@
 import { ActionIcon, Alert, Button, SegmentedControl, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
 import { IconAdjustments, IconAlertTriangle, IconBolt, IconCheck, IconPlus, IconShieldLock } from '@tabler/icons-react'
-// TODO: Implement proper copilot store
+import { sessionsStore } from '@/mobile/sessions-store'
+import { getCharacterById } from '@/mobile/character-store'
+
 interface Copilot {
   id: string
   name: string
-  active: boolean
+  systemPrompt?: string
+  characterId?: string
 }
+
 const copilots: Copilot[] = [
-  { id: 'default', name: 'Yachiyo Claw', active: true },
-  { id: 'tool', name: 'Tool Agent', active: false },
-  { id: 'character1', name: 'Character Card 1', active: false },
-  { id: 'character2', name: 'Character Card 2', active: false },
-  { id: 'custom1', name: 'Custom Agent 1', active: false },
-  { id: 'custom2', name: 'Custom Agent 2', active: false }
+  { 
+    id: 'default', 
+    name: 'Yachiyo Claw',
+    systemPrompt: 'You are Yachiyo Claw, an AI assistant...' // Default system prompt
+  },
+  { 
+    id: 'tool', 
+    name: 'Tool Agent',
+    systemPrompt: 'You are a tool-using agent...' 
+  },
+  { 
+    id: 'character1', 
+    name: 'Character Card 1',
+    characterId: 'char1'
+  },
+  { 
+    id: 'character2', 
+    name: 'Character Card 2',
+    characterId: 'char2'
+  }
 ]
-const setActiveCopilot = (id: string) => {
-  console.log('Setting active copilot to', id)
-  // TODO: Implement
+
+const setActiveCopilot = (sessionId: string, copilot: Copilot) => {
+  sessionsStore.updateSession(sessionId, {
+    copilotId: copilot.id,
+    characterId: copilot.characterId,
+    settings: {
+      systemPrompt: copilot.systemPrompt || ''
+    }
+  })
 }
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -348,21 +372,24 @@ export function AgentSessionControls({
           <section className="yachiyo-agent-config-panel">
             <Title order={2}>{t('Agent 预设')}</Title>
             <Stack gap="sm">
-              {copilots.map((copilot: Copilot) => (
-                <Button
-                  key={copilot.id}
-                  variant={copilot.active ? 'filled' : 'light'}
-                  fullWidth
-                  justify="space-between"
-                  rightSection={copilot.active ? <IconCheck size={16} /> : null}
-                  onClick={() => {
-                    setActiveCopilot(copilot.id)
-                    setSettingsOpened(false)
-                  }}
-                >
-                  {copilot.name}
-                </Button>
-              ))}
+              {copilots.map((copilot) => {
+                const isActive = sessionsStore.getSession(sessionId)?.copilotId === copilot.id
+                return (
+                  <Button
+                    key={copilot.id}
+                    variant={isActive ? 'filled' : 'light'}
+                    fullWidth
+                    justify="space-between"
+                    rightSection={isActive ? <IconCheck size={16} /> : null}
+                    onClick={() => {
+                      setActiveCopilot(sessionId, copilot)
+                      setSettingsOpened(false)
+                    }}
+                  >
+                    {copilot.name}
+                  </Button>
+                )
+              })}
               <Button
                 variant="outline"
                 fullWidth
@@ -385,7 +412,7 @@ export function AgentSessionControls({
                 ? t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')
                 : t('使用本地 ADB/Fastboot 桥接控制连接的设备')}
               checked={deviceControlEnabled}
-              disabled={false}
+              disabled={Capacitor.isNativePlatform() ? false : false}
               onChange={(event) => {
                 const checked = event.currentTarget.checked
                 setDeviceControlEnabled(checked)
