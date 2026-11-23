@@ -8,6 +8,7 @@ interface Copilot {
   name: string
   systemPrompt?: string
   characterId?: string
+  active?: boolean
 }
 
 const copilots: Copilot[] = [
@@ -497,21 +498,24 @@ export function AgentSessionControls({
         size="md"
       >
         <Stack gap="sm">
-          {copilots.map((copilot: Copilot) => (
-            <Button
-              key={copilot.id}
-              variant={copilot.active ? 'filled' : 'light'}
-              fullWidth
-              justify="space-between"
-              rightSection={copilot.active ? <IconCheck size={16} /> : null}
-              onClick={() => {
-                setActiveCopilot(copilot.id)
-                setPresetModalOpened(false)
-              }}
-            >
-              {copilot.name}
-            </Button>
-          ))}
+          {copilots.map((copilot) => {
+            const isActive = sessionsStore.getSession(sessionId)?.copilotId === copilot.id
+            return (
+              <Button
+                key={copilot.id}
+                variant={isActive ? 'filled' : 'light'}
+                fullWidth
+                justify="space-between"
+                rightSection={isActive ? <IconCheck size={16} /> : null}
+                onClick={() => {
+                  setActiveCopilot(sessionId, copilot)
+                  setPresetModalOpened(false)
+                }}
+              >
+                {copilot.name}
+              </Button>
+            )
+          })}
           <Button
             variant="outline"
             fullWidth
