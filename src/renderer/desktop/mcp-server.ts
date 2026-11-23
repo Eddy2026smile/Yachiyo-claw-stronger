@@ -47,7 +47,15 @@ async function readBody(req: IncomingMessage): Promise<string> {
   return body
 }
 
-function generateRandomSecret() {
+
+export interface DesktopMcpServerOptions {
+  allowLan?: boolean
+  allowedHosts?: string[]
+  staticDir?: string
+  syncDir?: string
+}
+
+export function generateRandomSecret() {
   return crypto.randomBytes(32).toString('hex')
 }
 
