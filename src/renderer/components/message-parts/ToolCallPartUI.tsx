@@ -437,6 +437,10 @@ const ParseLinkUI: FC<{ part: MessageToolCallPart }> = ({ part }) => {
 
 // ─── General Tool Call ──────────────────────────────────────────────
 
+interface AgentBlockedResult {
+  reason: string
+}
+
 const GeneralToolCallUI: FC<{ part: MessageToolCallPart }> = ({ part }) => {
   const { t } = useTranslation()
   const isError = part.state === 'error'
@@ -445,16 +449,16 @@ const GeneralToolCallUI: FC<{ part: MessageToolCallPart }> = ({ part }) => {
 
   // For agent_blocked/complete, show reason text by default
   useEffect(() => {
-    if (isAgentBlocked && part.result?.reason) {
+    if (isAgentBlocked && (part.result as AgentBlockedResult)?.reason) {
       setExpanded(true)
     }
-  }, [isAgentBlocked, part.result?.reason])
+  }, [isAgentBlocked, (part.result as AgentBlockedResult)?.reason])
 
   return (
     <Stack gap={6} mb="xs">
       <ToolCallPill 
         part={part} 
-        summary={isAgentBlocked ? part.result?.reason : undefined}
+        summary={isAgentBlocked ? (part.result as AgentBlockedResult)?.reason : undefined}
         onClick={() => setExpanded((prev) => !prev)} 
         expanded={expanded} 
       />
