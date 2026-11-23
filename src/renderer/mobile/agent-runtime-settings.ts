@@ -1,11 +1,15 @@
+import { Capacitor } from '@capacitor/core'
+
 export interface AgentRuntimeSettings {
   returnToAppOnComplete: boolean
+  desktopControlEnabled: boolean
 }
 
 const STORAGE_KEY = 'yachiyo-agent-runtime-settings-v1'
 
 export const DEFAULT_AGENT_RUNTIME_SETTINGS: AgentRuntimeSettings = {
   returnToAppOnComplete: true,
+  desktopControlEnabled: !Capacitor.isNativePlatform()
 }
 
 export function getAgentRuntimeSettings(): AgentRuntimeSettings {
