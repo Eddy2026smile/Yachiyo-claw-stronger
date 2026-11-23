@@ -381,7 +381,6 @@ export function AgentSessionControls({
                   } as any)
                 }}
               />
-            )}
             <Switch
               size="md"
               label={t('手机控制')}
