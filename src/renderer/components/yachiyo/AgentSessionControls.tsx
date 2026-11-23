@@ -65,7 +65,9 @@ export function AgentSessionControls({
   const [saving, setSaving] = useState(false)
   const [approvalMode, setApprovalMode] = useState<AgentApprovalMode>(config.approvalMode)
   const [backend, setBackend] = useState<AgentBackend>(config.backend)
-  const [deviceControlEnabled, setDeviceControlEnabled] = useState(config.deviceControlEnabled)
+  const [deviceControlEnabled,
+      desktopControlEnabled, setDeviceControlEnabled] = useState(config.deviceControlEnabled)
+  const [desktopControlEnabled, setDesktopControlEnabled] = useState(Boolean((config as any).desktopControlEnabled))
   const [permissionStatus, setPermissionStatus] = useState<DevicePermissionStatus | null>(null)
   const [backendReady, setBackendReady] = useState(false)
   const [backendDetail, setBackendDetail] = useState('')
@@ -167,6 +169,7 @@ export function AgentSessionControls({
       const next = saveAgentSessionConfig(sessionId, {
         backend,
         deviceControlEnabled,
+      desktopControlEnabled,
         approvalMode,
         configured: true,
         enabled: pendingEnable || enabled,
@@ -301,40 +304,63 @@ export function AgentSessionControls({
             <Select
               label={t('Agent 预设')}
               value={currentCharacter.id}
-              data={listCharacterProfiles().map(p => ({ value: p.id, label: p.name }))}
+              data={(() => {
+                const chars = listCharacterProfiles()
+                const seen = new Set(chars.map((c) => c.id))
+                const extras: { value: string; label: string }[] = []
+                try {
+                  const raw = localStorage.getItem('yachiyo-agent-presets') || localStorage.getItem('copilots') || '[]'
+                  const parsed = JSON.parse(raw)
+                  if (Array.isArray(parsed)) {
+                    for (const item of parsed) {
+                      const id = String(item?.id || item?.name || '')
+                      const label = String(item?.name || item?.title || id)
+                      if (id && !seen.has(id)) {
+                        seen.add(id)
+                        extras.push({ value: id, label })
+                      }
+                    }
+                  }
+                } catch {}
+                return [...chars.map((c) => ({ value: c.id, label: c.name })), ...extras]
+              })()}
               onChange={(id) => {
-                const profile = listCharacterProfiles().find(p => p.id === id)
-                if (profile) selectSessionCharacter(sessionId, profile)
+                if (!id) return
+                const chars = listCharacterProfiles()
+                const profile = chars.find((c) => c.id === id)
+                if (profile) {
+                  void selectSessionCharacter(sessionId, profile)
+                  return
+                }
+                try {
+                  const raw = localStorage.getItem('yachiyo-agent-presets') || localStorage.getItem('copilots') || '[]'
+                  const parsed = JSON.parse(raw)
+                  const custom = Array.isArray(parsed) ? parsed.find((x: any) => String(x?.id || x?.name) === id) : null
+                  if (custom) {
+                    void selectSessionCharacter(sessionId, {
+                      ...currentCharacter,
+                      id: String(custom.id || custom.name),
+                      name: String(custom.name || custom.title || id),
+                      soul: String(custom.systemPrompt || custom.prompt || custom.soul || currentCharacter.soul),
+                    })
+                  }
+                } catch {}
               }}
             />
           </section>
           <section className="yachiyo-agent-config-panel">
             <Switch
-              size="md"
-              label={t('手机控制')}
-              description={Capacitor.isNativePlatform() 
-                ? t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')
-                : t('可选。开启后允许通过 USB/Wireless ADB 和 Fastboot 控制连接的设备。')}
-              checked={deviceControlEnabled}
-              onChange={(event) => {
-                const checked = event.currentTarget.checked
-                setDeviceControlEnabled(checked)
-                if (checked && Capacitor.isNativePlatform()) {
-                  setPhonePermissionOpened(true)
-                  void refreshBackend()
-                }
-              }}
-            />
-            {!Capacitor.isNativePlatform() && (
-              <Switch
                 size="md"
                 label={t('PC / Desktop 控制')}
                 description={t('可选。开启后允许 Agent 执行本地 Mac 命令、文件操作和 ADB/Fastboot 工具。')}
-                checked={config.desktopControlEnabled}
+                checked={desktopControlEnabled}
                 onChange={(event) => {
+                  const checked = event.currentTarget.checked
+                  setDesktopControlEnabled(checked)
                   saveAgentSessionConfig(sessionId, {
-                    desktopControlEnabled: event.currentTarget.checked
-                  })
+                    ...(config as any),
+                    desktopControlEnabled: checked,
+                  } as any)
                 }}
               />
             )}
