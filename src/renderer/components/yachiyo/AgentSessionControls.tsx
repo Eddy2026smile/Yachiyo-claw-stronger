@@ -271,6 +271,7 @@ export function AgentSessionControls({
       icon: IconShieldLock,
       priority: 60,
       collapseStrategy: 'icon-then-overflow',
+      menuAction: { onSelect: () => alert('Preset selector will be implemented here') },
       renderControl: ({ presentation }) =>
         presentation === 'labelled' ? (
           <Button
