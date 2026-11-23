@@ -12,6 +12,8 @@ export interface AgentSessionConfig {
   enabled: boolean
   /** Adds privileged Android phone-control tools to the internal Agent. */
   deviceControlEnabled: boolean
+  /** Adds privileged desktop control tools to the internal Agent. */
+  desktopControlEnabled: boolean
   configured: boolean
   backend: AgentBackend
   approvalMode: AgentApprovalMode
@@ -49,7 +51,7 @@ function readAll(): Record<string, AgentSessionConfig> {
           ...config,
           // Before v2, enabling Agent always enabled phone control as well.
           deviceControlEnabled: Boolean(config.enabled),
-          desktopControlEnabled: false,
+          desktopControlEnabled: Boolean((config as any).desktopControlEnabled),
         },
       ])
     )
