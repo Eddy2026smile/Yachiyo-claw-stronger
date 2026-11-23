@@ -98,6 +98,17 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(flowGlassCss).toContain('z-index: 9999 !important')
   })
 
+  it('has always-enabled Agent settings button and preset selector', () => {
+    const agentControls = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/AgentSessionControls.tsx'),
+      'utf8'
+    )
+    expect(agentControls).toContain('variant="filled"')
+    expect(agentControls).toContain('color="blue"')
+    expect(agentControls).toContain('Agent 预设')
+    expect(agentControls).toContain('IconShieldLock')
+  })
+
   it('exposes Android ADB tools via MCP server', () => {
     const mcpServer = readFileSync(
       join(process.cwd(), 'src/renderer/desktop/mcp-server.ts'),

@@ -254,7 +254,8 @@ export function AgentSessionControls({
           <ActionIcon
             className="yachiyo-agent-settings-button"
             size={44}
-            variant="default"
+            variant="filled"
+            color="blue"
             aria-label={settingsLabel}
             aria-expanded={settingsOpened}
             onClick={() => openSettings(false)}
@@ -263,6 +264,35 @@ export function AgentSessionControls({
           </ActionIcon>
         </Tooltip>
       ),
+    },
+    {
+      id: 'presets',
+      label: t('Agent 预设'),
+      icon: IconShieldLock,
+      priority: 60,
+      collapseStrategy: 'icon-then-overflow',
+      renderControl: ({ presentation }) =>
+        presentation === 'labelled' ? (
+          <Button
+            variant="light"
+            leftSection={<IconShieldLock size={17} />}
+            onClick={() => alert('Preset selector will be implemented here')}
+          >
+            {t('Agent 预设')}
+          </Button>
+        ) : (
+          <Tooltip label={t('Agent 预设')}>
+            <ActionIcon
+              size={44}
+              variant="light"
+              color="blue"
+              aria-label={t('Agent 预设')}
+              onClick={() => alert('Preset selector will be implemented here')}
+            >
+              <IconShieldLock size={19} />
+            </ActionIcon>
+          </Tooltip>
+        ),
     },
   ]
 
