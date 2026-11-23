@@ -257,6 +257,15 @@ export function createDesktopMcpServer(
                 } 
               })
               break
+            case 'desktop_shell':
+              if (!args || !args[0]) throw new Error('Missing command')
+              result = execSync(args[0], { 
+                encoding: 'utf8',
+                env: {
+                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH
+                }
+              })
+              break
             default:
               throw new Error('Unknown tool')
           }
