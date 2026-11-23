@@ -330,7 +330,7 @@ export function AgentSessionControls({
             leftSection={<IconShieldLock size={17} />}
             onClick={() => setPresetModalOpened(true)}
           >
-            {t('Agent 预设')}
+            {t('Agent Preset') + ': ' + (sessionsStore.getSession(sessionId)?.copilotId || t('Default'))}
           </Button>
         ) : (
           <Tooltip label={t('Agent 预设')}>
