@@ -344,9 +344,10 @@ export function AgentSessionControls({
               })()}
               searchable
               clearable
-              placeholder={t('选择 Agent 预设')}
-              description={t('选择不同的 Agent 预设来改变系统提示词和行为')}
-              onChange={(id: string) => {
+              placeholder={String(t('选择 Agent 预设'))}
+              description={String(t('选择不同的 Agent 预设来改变系统提示词和行为'))}
+              onChange={(id: string | null) => {
+                if (!id) return;
                 if (!id) return
                 const chars = listCharacterProfiles()
                 const profile = chars.find((c) => c.id === id)
