@@ -8,7 +8,11 @@ interface Copilot {
 }
 const copilots: Copilot[] = [
   { id: 'default', name: 'Yachiyo Claw', active: true },
-  { id: 'tool', name: 'Tool Agent', active: false }
+  { id: 'tool', name: 'Tool Agent', active: false },
+  { id: 'character1', name: 'Character Card 1', active: false },
+  { id: 'character2', name: 'Character Card 2', active: false },
+  { id: 'custom1', name: 'Custom Agent 1', active: false },
+  { id: 'custom2', name: 'Custom Agent 2', active: false }
 ]
 const setActiveCopilot = (id: string) => {
   console.log('Setting active copilot to', id)
@@ -338,6 +342,37 @@ export function AgentSessionControls({
         size="lg"
       >
         <Stack gap="md">
+          <section className="yachiyo-agent-config-panel">
+            <Title order={2}>{t('Agent 预设')}</Title>
+            <Stack gap="sm">
+              {copilots.map((copilot: Copilot) => (
+                <Button
+                  key={copilot.id}
+                  variant={copilot.active ? 'filled' : 'light'}
+                  fullWidth
+                  justify="space-between"
+                  rightSection={copilot.active ? <IconCheck size={16} /> : null}
+                  onClick={() => {
+                    setActiveCopilot(copilot.id)
+                    setSettingsOpened(false)
+                  }}
+                >
+                  {copilot.name}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                fullWidth
+                leftSection={<IconPlus size={16} />}
+                onClick={() => {
+                  // TODO: Implement new preset creation flow
+                  alert(t('New preset creation will be implemented here'))
+                }}
+              >
+                {t('+ 新建 Agent 预设')}
+              </Button>
+            </Stack>
+          </section>
           <AgentConfigurationPanel showAccessBackend={false} sessionId={sessionId} />
           <section className="yachiyo-agent-config-panel">
             <Switch
