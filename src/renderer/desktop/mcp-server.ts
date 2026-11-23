@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { extname, join, normalize, resolve } from 'node:path'
 import { URL } from 'node:url'
 import { exec, execSync } from 'node:child_process'
+import crypto from 'node:crypto'
 import { McpHttpService } from '../mobile/mcp-http-service'
 
 export interface DesktopMcpServer {
@@ -44,6 +45,10 @@ async function readBody(req: IncomingMessage): Promise<string> {
     body += chunk
   }
   return body
+}
+
+function generateRandomSecret() {
+  return crypto.randomBytes(32).toString('hex')
 }
 
 export function createDesktopMcpServer(
@@ -151,7 +156,19 @@ export function createDesktopMcpServer(
 
       if (pathname === '/tools/list') {
         res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
-          tools: ['adb_devices', 'adb_screenshot', 'adb_ui_tree', 'adb_tap', 'adb_input_text', 'adb_logcat', 'adb_install_apk']
+          tools: [
+            'adb_devices', 
+            'adb_screenshot', 
+            'adb_ui_tree', 
+            'adb_tap', 
+            'adb_input_text',
+            'adb_keyevent',
+            'adb_logcat',
+            'adb_shell',
+            'adb_install_apk',
+            'fastboot_devices',
+            'fastboot_getvar'
+          ]
         }))
         return
       }

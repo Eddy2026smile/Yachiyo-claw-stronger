@@ -378,14 +378,25 @@ export function AgentSessionControls({
             <Switch
               size="md"
               label={t('手机控制')}
-              description={t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')}
+              description={Capacitor.isNativePlatform() 
+                ? t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')
+                : t('使用本地 ADB/Fastboot 桥接控制连接的设备')}
               checked={deviceControlEnabled}
+              disabled={false}
               onChange={(event) => {
                 const checked = event.currentTarget.checked
                 setDeviceControlEnabled(checked)
                 if (checked) {
-                  setPhonePermissionOpened(true)
-                  void refreshBackend()
+                  if (Capacitor.isNativePlatform()) {
+                    setPhonePermissionOpened(true)
+                    void refreshBackend()
+                  } else {
+                    // Auto-enable desktop MCP server
+                    createDesktopMcpServer(8080, generateRandomSecret(), {
+                      allowLan: false,
+                      staticDir: join(process.cwd(), 'dist/renderer')
+                    }).start()
+                  }
                 }
               }}
             />
