@@ -76,11 +76,15 @@ const BUILTIN_PROMPT_BLOCKS: readonly PromptBlock[] = [
     blockName: 'phone_control',
     order: 400,
     render: (context) => {
-      if (!option(context, 'android-device', 'deviceAgent')) return null
+      const deviceControlEnabled = option(context, 'android-device', 'deviceControlEnabled')
+      if (!deviceControlEnabled) return null
       return [
         '<phone_control>',
         'Phone control is enabled for this conversation and Android device tools are available in addition to all internal tools.',
-        'Use phone tools only when the request needs information or actions from the Android device itself. Use internal sandbox, Skills, MCP, file, and retrieval tools for work that can remain inside the app.',
+        context.platformType === 'desktop-web' 
+          ? 'On desktop, phone control connects via local ADB to USB/wireless devices. Ensure ADB is installed and devices are connected.' 
+          : 'Use phone tools only when the request needs information or actions from the Android device itself.',
+        'Use internal sandbox, Skills, MCP, file, and retrieval tools for work that can remain inside the app.',
         'For the phone model, manufacturer, Android version, SDK version, or runtime environment, call android_device_info.',
         'Treat phone-control requests as an observe -> act -> observe/verify loop. For the current screen and visible UI state, call android_observe before acting and again after every side effect to verify the result.',
         'Never infer that an Android app is missing, installed, signed in, searchable, or already in a target state from a generic response. Launch the package when known, then observe the actual result; only state that it is unavailable after android_launch_app or a relevant observed UI result proves it.',

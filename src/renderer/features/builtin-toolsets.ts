@@ -92,6 +92,7 @@ const coreAgentFactory: FeatureToolsetFactory = async (context) => {
               sandbox: sandbox ?? { state: 'unavailable' },
               externalWorkspace: externalWorkspace ?? { available: false },
               controlledBrowserAvailable: Boolean(platform.controlledBrowserNavigate && platform.controlledBrowserSnapshot),
+              phoneControlAvailable: Boolean(options(context, 'android-device')?.deviceControlEnabled),
             },
             evidence: ['live_runtime_status'],
           })
@@ -223,7 +224,11 @@ const workspaceFactory: FeatureToolsetFactory = async (context) => {
 }
 
 const androidDeviceFactory: FeatureToolsetFactory = async (context) => {
-  if (!options(context, 'android-device')?.deviceControlEnabled || context.platformType !== 'mobile') return null
+  const deviceControlEnabled = options(context, 'android-device')?.deviceControlEnabled
+  if (!deviceControlEnabled) return null
+  
+  // Allow on mobile or desktop web
+  if (context.platformType !== 'mobile' && context.platformType !== 'desktop-web') return null
   const set = createAndroidDeviceToolSet(context.agentRunId, context.approvalSessionId)
   return { instructions: set.description, tools: set.tools, initialActiveTools: ANDROID_TOOL_STAGE_INITIAL }
 }
