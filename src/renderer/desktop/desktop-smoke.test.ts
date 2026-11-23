@@ -173,11 +173,15 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
   it('tests all AgentSessionControls interactive elements', async () => {
     // Mock localStorage
     const mockLocalStorage = {
-      getItem: vi.fn((key) => {
+      getItem: vi.fn((key: string) => {
         if (key === 'yachiyo.characters.v1') return JSON.stringify([{
           id: 'custom-char',
           name: 'Custom',
-          prompt: 'Custom prompt'
+          avatar: '/avatar.png',
+          prompt: 'Custom prompt',
+          live2dModelId: 'default',
+          defaultTtsProvider: 'bing',
+          defaultTtsModel: 'edge-read-aloud'
         }])
         if (key === 'yachiyo-agent-presets') return JSON.stringify([{
           id: 'custom-agent',
@@ -195,34 +199,109 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       enabled: true,
       deviceControlEnabled: false,
       desktopControlEnabled: false,
-      backend: 'accessibility',
-      approvalMode: 'manual'
+      configured: true,
+      backend: 'accessibility' as const,
+      approvalMode: 'manual' as const,
+      allowDangerousForConversation: false,
+      workingDirectory: ''
     }
     vi.mock('@/mobile/agent-session-config', () => ({
       getAgentSessionConfig: vi.fn(() => mockConfig),
-      saveAgentSessionConfig: vi.fn((_, patch) => {
+      saveAgentSessionConfig: vi.fn((_: string, patch: Partial<typeof mockConfig>) => {
         Object.assign(mockConfig, patch)
         return mockConfig
-      })
+      }),
+      defaultConfig: vi.fn(() => mockConfig)
     }))
 
     // Mock character profiles
     vi.mock('@/mobile/character-profiles', () => ({
+      DEFAULT_CHARACTER: {
+        id: 'default',
+        name: 'Default',
+        avatar: '/avatar.png',
+        prompt: 'Default prompt',
+        live2dModelId: 'default',
+        defaultTtsProvider: 'bing',
+        defaultTtsModel: 'edge-read-aloud'
+      },
       listCharacterProfiles: vi.fn(() => [
-        { id: 'default', name: 'Default', prompt: 'Default prompt' },
-        { id: 'custom-char', name: 'Custom', prompt: 'Custom prompt' }
+        {
+          id: 'default',
+          name: 'Default',
+          avatar: '/avatar.png',
+          prompt: 'Default prompt',
+          live2dModelId: 'default',
+          defaultTtsProvider: 'bing',
+          defaultTtsModel: 'edge-read-aloud'
+        },
+        {
+          id: 'custom-char',
+          name: 'Custom',
+          avatar: '/avatar.png',
+          prompt: 'Custom prompt',
+          live2dModelId: 'default',
+          defaultTtsProvider: 'bing',
+          defaultTtsModel: 'edge-read-aloud'
+        }
       ]),
-      getSessionCharacter: vi.fn(() => ({ id: 'default', name: 'Default' })),
-      selectSessionCharacter: vi.fn()
+      getSessionCharacter: vi.fn(() => ({
+        id: 'default',
+        name: 'Default',
+        avatar: '/avatar.png',
+        prompt: 'Default prompt',
+        live2dModelId: 'default',
+        defaultTtsProvider: 'bing',
+        defaultTtsModel: 'edge-read-aloud'
+      })),
+      selectSessionCharacter: vi.fn(async () => {}),
+      saveCharacterProfile: vi.fn()
+    }))
+
+    // Mock agent broker
+    vi.mock('@/mobile/agent-broker', () => ({
+      getAgentBackend: vi.fn(() => 'accessibility'),
+      setAgentBackend: vi.fn(),
+      getAgentWorkingDirectory: vi.fn(() => ''),
+      getCachedRootCapability: vi.fn(() => ({ available: false, detail: '' })),
+      getRootCapability: vi.fn()
+    }))
+
+    // Mock device access
+    vi.mock('@/platform/native/yachiyo_device_access', () => ({
+      yachiyoDeviceAccessNative: {
+        getPermissionStatus: vi.fn(() => Promise.resolve({
+          accessibility: true,
+          overlay: true,
+          shizukuGranted: false,
+          shizukuRunning: false
+        })),
+        openPermissionSettings: vi.fn(),
+        requestShizukuPermission: vi.fn()
+      }
+    }))
+
+    // Mock agent runtime settings
+    vi.mock('@/mobile/agent-runtime-settings', () => ({
+      getAgentRuntimeSettings: vi.fn(() => ({ returnToAppOnComplete: false })),
+      saveAgentRuntimeSettings: vi.fn()
+    }))
+
+    // Mock translation
+    vi.mock('react-i18next', () => ({
+      useTranslation: () => ({
+        t: (key: string) => key
+      })
     }))
 
     // Render component
     const { getByText, getByLabelText } = render(
-      React.createElement(AgentSessionControls, {
-        sessionId: "test-session",
-        enabled: true,
-        onToggle: async () => {}
-      })
+      <AgentSessionControls 
+        sessionId="test-session"
+        enabled={true}
+        onToggle={async () => {}}
+        showStatus={true}
+      />
     )
 
     // Test Agent selector
@@ -253,8 +332,11 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
       enabled: true,
       deviceControlEnabled: true,
       desktopControlEnabled: true,
+      configured: true,
       backend: 'accessibility',
-      approvalMode: 'manual'
+      approvalMode: 'manual',
+      allowDangerousForConversation: false,
+      workingDirectory: ''
     })
   })
 })
