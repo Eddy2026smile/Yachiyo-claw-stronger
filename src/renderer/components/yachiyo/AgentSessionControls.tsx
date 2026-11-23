@@ -1,57 +1,7 @@
 import { ActionIcon, Alert, Button, SegmentedControl, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
-import { IconAdjustments, IconAlertTriangle, IconBolt, IconCheck, IconPlus, IconShieldLock } from '@tabler/icons-react'
-import { sessionsStore } from '@/mobile/sessions-store'
-import { getCharacterById } from '@/mobile/character-store'
-
-interface Copilot {
-  id: string
-  name: string
-  systemPrompt?: string
-  characterId?: string
-  active?: boolean
-}
-
-const copilots: Copilot[] = [
-  { 
-    id: 'default', 
-    name: 'Yachiyo Claw',
-    systemPrompt: 'You are Yachiyo Claw, an AI assistant...' // Default system prompt
-  },
-  { 
-    id: 'tool', 
-    name: 'Tool Agent',
-    systemPrompt: 'You are a tool-using agent...' 
-  },
-  { 
-    id: 'character1', 
-    name: 'Character Card 1',
-    characterId: 'char1'
-  },
-  { 
-    id: 'character2', 
-    name: 'Character Card 2',
-    characterId: 'char2'
-  }
-]
-
-const setActiveCopilot = (sessionId: string, copilot: Copilot) => {
-  const character = copilot.characterId ? getCharacterById(copilot.characterId) : null
-  sessionsStore.updateSession(sessionId, {
-    copilotId: copilot.id,
-    characterId: copilot.characterId,
-    name: copilot.name,
-    assistantAvatarKey: character?.avatar || undefined,
-    settings: {
-      systemPrompt: copilot.systemPrompt || '',
-      assistantName: copilot.name
-    }
-  })
-}
+import { IconAdjustments, IconAlertTriangle, IconBolt, IconShieldLock } from '@tabler/icons-react'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Capacitor } from '@capacitor/core'
-import { join } from 'node:path'
-import { createDesktopMcpServer, generateRandomSecret } from '../../desktop/mcp-server'
 import { AdaptiveModal } from '@/components/common/AdaptiveModal'
 import {
   type AgentBackend,
@@ -119,7 +69,6 @@ export function AgentSessionControls({
   const [backendDetail, setBackendDetail] = useState('')
   const [authorizing, setAuthorizing] = useState(false)
   const [returnToApp, setReturnToApp] = useState(() => getAgentRuntimeSettings().returnToAppOnComplete)
-  const [presetModalOpened, setPresetModalOpened] = useState(false)
 
   useEffect(() => {
     const next = getAgentSessionConfig(sessionId)
@@ -305,8 +254,7 @@ export function AgentSessionControls({
           <ActionIcon
             className="yachiyo-agent-settings-button"
             size={44}
-            variant="filled"
-            color="blue"
+            variant="default"
             aria-label={settingsLabel}
             aria-expanded={settingsOpened}
             onClick={() => openSettings(false)}
@@ -315,36 +263,6 @@ export function AgentSessionControls({
           </ActionIcon>
         </Tooltip>
       ),
-    },
-    {
-      id: 'presets',
-      label: t('Agent 预设'),
-      icon: IconShieldLock,
-      priority: 60,
-      collapseStrategy: 'icon-then-overflow',
-      menuAction: { onSelect: () => setPresetModalOpened(true) },
-      renderControl: ({ presentation }) =>
-        presentation === 'labelled' ? (
-          <Button
-            variant="light"
-            leftSection={<IconShieldLock size={17} />}
-            onClick={() => setPresetModalOpened(true)}
-          >
-            {t('Agent Preset') + ': ' + (sessionsStore.getSession(sessionId)?.copilotId || t('Default'))}
-          </Button>
-        ) : (
-          <Tooltip label={t('Agent 预设')}>
-            <ActionIcon
-              size={44}
-              variant="light"
-              color="blue"
-              aria-label={t('Agent 预设')}
-              onClick={() => setPresetModalOpened(true)}
-            >
-              <IconShieldLock size={19} />
-            </ActionIcon>
-          </Tooltip>
-        ),
     },
   ]
 
@@ -374,64 +292,19 @@ export function AgentSessionControls({
         size="lg"
       >
         <Stack gap="md">
-          <section className="yachiyo-agent-config-panel">
-            <Title order={2}>{t('Agent 预设')}</Title>
-            <Stack gap="sm">
-              {copilots.map((copilot) => {
-                const isActive = sessionsStore.getSession(sessionId)?.copilotId === copilot.id
-                return (
-                  <Button
-                    key={copilot.id}
-                    variant={isActive ? 'filled' : 'light'}
-                    fullWidth
-                    justify="space-between"
-                    rightSection={isActive ? <IconCheck size={16} /> : null}
-                    onClick={() => {
-                      setActiveCopilot(sessionId, copilot)
-                      setSettingsOpened(false)
-                    }}
-                  >
-                    {copilot.name}
-                  </Button>
-                )
-              })}
-              <Button
-                variant="outline"
-                fullWidth
-                leftSection={<IconPlus size={16} />}
-                onClick={() => {
-                  // TODO: Implement new preset creation flow
-                  alert(t('New preset creation will be implemented here'))
-                }}
-              >
-                {t('+ 新建 Agent 预设')}
-              </Button>
-            </Stack>
-          </section>
           <AgentConfigurationPanel showAccessBackend={false} sessionId={sessionId} />
           <section className="yachiyo-agent-config-panel">
             <Switch
               size="md"
               label={t('手机控制')}
-              description={Capacitor.isNativePlatform() 
-                ? t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')
-                : t('使用本地 ADB/Fastboot 桥接控制连接的设备')}
+              description={t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')}
               checked={deviceControlEnabled}
-              disabled={false}
               onChange={(event) => {
                 const checked = event.currentTarget.checked
                 setDeviceControlEnabled(checked)
                 if (checked) {
-                  if (Capacitor.isNativePlatform()) {
-                    setPhonePermissionOpened(true)
-                    void refreshBackend()
-                  } else {
-                    // Auto-enable desktop MCP server
-                    createDesktopMcpServer(8080, generateRandomSecret(), {
-                      allowLan: false,
-                      staticDir: join(process.cwd(), 'dist/renderer')
-                    }).start()
-                  }
+                  setPhonePermissionOpened(true)
+                  void refreshBackend()
                 }
               }}
             />
@@ -491,46 +364,6 @@ export function AgentSessionControls({
               {t('保存设置')}
             </Button>
           </AdaptiveModal.Actions>
-        </Stack>
-      </AdaptiveModal>
-
-      <AdaptiveModal
-        opened={presetModalOpened}
-        onClose={() => setPresetModalOpened(false)}
-        title={t('选择 Agent 预设')}
-        centered
-        size="md"
-      >
-        <Stack gap="sm">
-          {copilots.map((copilot) => {
-            const isActive = sessionsStore.getSession(sessionId)?.copilotId === copilot.id
-            return (
-              <Button
-                key={copilot.id}
-                variant={isActive ? 'filled' : 'light'}
-                fullWidth
-                justify="space-between"
-                rightSection={isActive ? <IconCheck size={16} /> : null}
-                onClick={() => {
-                  setActiveCopilot(sessionId, copilot)
-                  setPresetModalOpened(false)
-                }}
-              >
-                {copilot.name}
-              </Button>
-            )
-          })}
-          <Button
-            variant="outline"
-            fullWidth
-            leftSection={<IconPlus size={16} />}
-            onClick={() => {
-              // TODO: Implement new preset creation flow
-              alert(t('New preset creation will be implemented here'))
-            }}
-          >
-            {t('+ 新建 Agent 预设')}
-          </Button>
         </Stack>
       </AdaptiveModal>
 
