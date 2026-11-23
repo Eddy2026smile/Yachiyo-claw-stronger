@@ -8,6 +8,7 @@ export interface CharacterProfile {
   name: string
   avatar: string
   prompt: string
+  systemPrompt?: string
   live2dModelId: string
   defaultLlmProvider?: string
   defaultLlmModel?: string

@@ -1,4 +1,4 @@
-import { ActionIcon, Alert, Button, Group, Menu, SegmentedControl, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
+import { ActionIcon, Alert, Button, Group, Menu, SegmentedControl, Select, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
 import { IconAdjustments, IconAlertTriangle, IconBolt, IconShieldLock, IconUser } from '@tabler/icons-react'
 import { listCharacterProfiles, getSessionCharacter, selectSessionCharacter } from '@/mobile/character-profiles'
 import { Capacitor } from '@capacitor/core'
@@ -342,7 +342,11 @@ export function AgentSessionControls({
                   }))
                 ]
               })()}
-              onChange={(id) => {
+              searchable
+              clearable
+              placeholder={t('选择 Agent 预设')}
+              description={t('选择不同的 Agent 预设来改变系统提示词和行为')}
+              onChange={(id: string) => {
                 if (!id) return
                 const chars = listCharacterProfiles()
                 const profile = chars.find((c) => c.id === id)
@@ -359,7 +363,7 @@ export function AgentSessionControls({
                       ...currentCharacter,
                       id: String(custom.id || custom.name),
                       name: String(custom.name || custom.title || id),
-                      soul: String(custom.systemPrompt || custom.prompt || custom.soul || currentCharacter.soul),
+                      prompt: String(custom.systemPrompt || custom.prompt || currentCharacter.prompt),
                     })
                   }
                 } catch {}
