@@ -156,6 +156,19 @@ export function createDesktopMcpServer(
         return
       }
 
+      if (pathname === '/desktop-mcp-autoconfig') {
+        const remoteAddress = req.socket.remoteAddress
+        if (remoteAddress !== '127.0.0.1' && remoteAddress !== '::1' && remoteAddress !== '::ffff:127.0.0.1') {
+          res.writeHead(403).end()
+          return
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
+          url: `http://localhost:${port}/mcp`,
+          token: secret
+        }))
+        return
+      }
+
       if (pathname === '/tools/call') {
         if (!isAuthorized()) {
           res.writeHead(401).end()
