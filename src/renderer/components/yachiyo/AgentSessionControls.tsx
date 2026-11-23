@@ -1,5 +1,7 @@
 import { ActionIcon, Alert, Button, SegmentedControl, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
-import { IconAdjustments, IconAlertTriangle, IconBolt, IconShieldLock } from '@tabler/icons-react'
+import { IconAdjustments, IconAlertTriangle, IconBolt, IconCheck, IconPlus, IconShieldLock } from '@tabler/icons-react'
+import { useCopilots, copilotsStore } from '@/mobile/copilots'
+import type { Copilot } from '@/mobile/copilots/types'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AdaptiveModal } from '@/components/common/AdaptiveModal'
@@ -409,7 +411,7 @@ export function AgentSessionControls({
         size="md"
       >
         <Stack gap="sm">
-          {copilots.map((copilot) => (
+          {copilots.map((copilot: Copilot) => (
             <Button
               key={copilot.id}
               variant={copilot.active ? 'filled' : 'light'}
