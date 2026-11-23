@@ -23,6 +23,7 @@ export interface AgentSessionConfig {
 const defaultConfig = (): AgentSessionConfig => ({
   enabled: false,
   deviceControlEnabled: false,
+  desktopControlEnabled: false,
   configured: false,
   backend: getAgentBackend(),
   approvalMode: 'manual',
@@ -48,6 +49,7 @@ function readAll(): Record<string, AgentSessionConfig> {
           ...config,
           // Before v2, enabling Agent always enabled phone control as well.
           deviceControlEnabled: Boolean(config.enabled),
+          desktopControlEnabled: false,
         },
       ])
     )
