@@ -69,6 +69,9 @@ export function AgentSessionControls({
   const [backendDetail, setBackendDetail] = useState('')
   const [authorizing, setAuthorizing] = useState(false)
   const [returnToApp, setReturnToApp] = useState(() => getAgentRuntimeSettings().returnToAppOnComplete)
+  const [presetModalOpened, setPresetModalOpened] = useState(false)
+  const copilots = useCopilots()
+  const { setActiveCopilot } = copilotsStore
 
   useEffect(() => {
     const next = getAgentSessionConfig(sessionId)
@@ -271,13 +274,13 @@ export function AgentSessionControls({
       icon: IconShieldLock,
       priority: 60,
       collapseStrategy: 'icon-then-overflow',
-      menuAction: { onSelect: () => alert('Preset selector will be implemented here') },
+      menuAction: { onSelect: () => setPresetModalOpened(true) },
       renderControl: ({ presentation }) =>
         presentation === 'labelled' ? (
           <Button
             variant="light"
             leftSection={<IconShieldLock size={17} />}
-            onClick={() => alert('Preset selector will be implemented here')}
+            onClick={() => setPresetModalOpened(true)}
           >
             {t('Agent 预设')}
           </Button>
@@ -288,7 +291,7 @@ export function AgentSessionControls({
               variant="light"
               color="blue"
               aria-label={t('Agent 预设')}
-              onClick={() => alert('Preset selector will be implemented here')}
+              onClick={() => setPresetModalOpened(true)}
             >
               <IconShieldLock size={19} />
             </ActionIcon>
@@ -395,6 +398,43 @@ export function AgentSessionControls({
               {t('保存设置')}
             </Button>
           </AdaptiveModal.Actions>
+        </Stack>
+      </AdaptiveModal>
+
+      <AdaptiveModal
+        opened={presetModalOpened}
+        onClose={() => setPresetModalOpened(false)}
+        title={t('选择 Agent 预设')}
+        centered
+        size="md"
+      >
+        <Stack gap="sm">
+          {copilots.map((copilot) => (
+            <Button
+              key={copilot.id}
+              variant={copilot.active ? 'filled' : 'light'}
+              fullWidth
+              justify="space-between"
+              rightSection={copilot.active ? <IconCheck size={16} /> : null}
+              onClick={() => {
+                setActiveCopilot(copilot.id)
+                setPresetModalOpened(false)
+              }}
+            >
+              {copilot.name}
+            </Button>
+          ))}
+          <Button
+            variant="outline"
+            fullWidth
+            leftSection={<IconPlus size={16} />}
+            onClick={() => {
+              // TODO: Implement new preset creation flow
+              alert(t('New preset creation will be implemented here'))
+            }}
+          >
+            {t('+ 新建 Agent 预设')}
+          </Button>
         </Stack>
       </AdaptiveModal>
 
