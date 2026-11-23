@@ -35,11 +35,15 @@ const copilots: Copilot[] = [
 ]
 
 const setActiveCopilot = (sessionId: string, copilot: Copilot) => {
+  const character = copilot.characterId ? getCharacterById(copilot.characterId) : null
   sessionsStore.updateSession(sessionId, {
     copilotId: copilot.id,
     characterId: copilot.characterId,
+    name: copilot.name,
+    assistantAvatarKey: character?.avatar || undefined,
     settings: {
-      systemPrompt: copilot.systemPrompt || ''
+      systemPrompt: copilot.systemPrompt || '',
+      assistantName: copilot.name
     }
   })
 }
@@ -413,7 +417,7 @@ export function AgentSessionControls({
                 ? t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')
                 : t('使用本地 ADB/Fastboot 桥接控制连接的设备')}
               checked={deviceControlEnabled}
-              disabled={Capacitor.isNativePlatform() ? false : false}
+              disabled={false}
               onChange={(event) => {
                 const checked = event.currentTarget.checked
                 setDeviceControlEnabled(checked)

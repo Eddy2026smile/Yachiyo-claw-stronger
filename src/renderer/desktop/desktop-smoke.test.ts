@@ -129,15 +129,36 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(mcpServer).toMatch(/127\.0\.0\.1.*403/)
   })
 
-  it('allows phone control on desktop and properly updates agent presets', () => {
+  it('persists all agent settings when selecting a copilot', () => {
     const agentControls = readFileSync(
       join(process.cwd(), 'src/renderer/components/yachiyo/AgentSessionControls.tsx'),
       'utf8'
     )
-    expect(agentControls).toContain('Capacitor.isNativePlatform() ? false : false')
     expect(agentControls).toContain('sessionsStore.updateSession')
-    expect(agentControls).toContain('systemPrompt: copilot.systemPrompt')
     expect(agentControls).toContain('characterId: copilot.characterId')
+    expect(agentControls).toContain('assistantAvatarKey: character?.avatar')
+    expect(agentControls).toContain('name: copilot.name')
+    expect(agentControls).toContain('settings: {')
+    expect(agentControls).toContain('systemPrompt: copilot.systemPrompt')
+    expect(agentControls).toContain('assistantName: copilot.name')
+  })
+
+  it('shows active agent name in preset button', () => {
+    const agentControls = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/AgentSessionControls.tsx'),
+      'utf8'
+    )
+    expect(agentControls).toContain('Agent Preset')
+    expect(agentControls).toContain('sessionsStore.getSession(sessionId)?.copilotId')
+  })
+
+  it('allows phone control on all platforms', () => {
+    const agentControls = readFileSync(
+      join(process.cwd(), 'src/renderer/components/yachiyo/AgentSessionControls.tsx'),
+      'utf8'
+    )
+    expect(agentControls).not.toContain('Capacitor.isNativePlatform()')
+    expect(agentControls).toContain('disabled={false}')
   })
 
   it('has desktop MCP server with proper ADB/Fastboot PATH', () => {
