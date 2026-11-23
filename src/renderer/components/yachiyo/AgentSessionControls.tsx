@@ -381,13 +381,14 @@ export function AgentSessionControls({
                 label={t('PC / Desktop 控制')}
                 description={t('可选。开启后允许 Agent 执行本地 Mac 命令、文件操作和 ADB/Fastboot 工具。')}
                 checked={desktopControlEnabled}
+                disabled={Capacitor.isNativePlatform()}
                 onChange={(event) => {
                   const checked = event.currentTarget.checked
                   setDesktopControlEnabled(checked)
-                  saveAgentSessionConfig(sessionId, {
+                  setConfig(saveAgentSessionConfig(sessionId, {
                     ...config,
                     desktopControlEnabled: checked,
-                  })
+                  }))
                 }}
               />
             <Switch
