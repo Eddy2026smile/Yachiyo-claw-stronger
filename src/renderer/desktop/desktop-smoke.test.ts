@@ -169,4 +169,92 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     expect(mcpServer).toContain('/opt/homebrew/bin:/usr/local/bin')
     expect(mcpServer).toContain('ANDROID_HOME')
   })
+
+  it('tests all AgentSessionControls interactive elements', async () => {
+    // Mock localStorage
+    const mockLocalStorage = {
+      getItem: vi.fn((key) => {
+        if (key === 'yachiyo.characters.v1') return JSON.stringify([{
+          id: 'custom-char',
+          name: 'Custom',
+          prompt: 'Custom prompt'
+        }])
+        if (key === 'yachiyo-agent-presets') return JSON.stringify([{
+          id: 'custom-agent',
+          name: 'Custom Agent',
+          systemPrompt: 'Agent prompt'
+        }])
+        return null
+      }),
+      setItem: vi.fn()
+    }
+    vi.stubGlobal('localStorage', mockLocalStorage)
+
+    // Mock session config
+    const mockConfig = {
+      enabled: true,
+      deviceControlEnabled: false,
+      desktopControlEnabled: false,
+      backend: 'accessibility',
+      approvalMode: 'manual'
+    }
+    vi.mock('@/mobile/agent-session-config', () => ({
+      getAgentSessionConfig: vi.fn(() => mockConfig),
+      saveAgentSessionConfig: vi.fn((_, patch) => {
+        Object.assign(mockConfig, patch)
+        return mockConfig
+      })
+    }))
+
+    // Mock character profiles
+    vi.mock('@/mobile/character-profiles', () => ({
+      listCharacterProfiles: vi.fn(() => [
+        { id: 'default', name: 'Default', prompt: 'Default prompt' },
+        { id: 'custom-char', name: 'Custom', prompt: 'Custom prompt' }
+      ]),
+      getSessionCharacter: vi.fn(() => ({ id: 'default', name: 'Default' })),
+      selectSessionCharacter: vi.fn()
+    }))
+
+    // Render component
+    const { getByText, getByLabelText, getByRole } = render(
+      <AgentSessionControls 
+        sessionId="test-session" 
+        enabled={true} 
+        onToggle={() => {}} 
+      />
+    )
+
+    // Test Agent selector
+    const selector = getByLabelText('Agent 预设')
+    fireEvent.click(selector)
+    expect(getByText('Default')).toBeInTheDocument()
+    expect(getByText('Custom')).toBeInTheDocument()
+    expect(getByText('Tool Agent')).toBeInTheDocument()
+    expect(getByText('Custom Agent')).toBeInTheDocument()
+
+    // Test control switches
+    const phoneSwitch = getByLabelText('手机控制')
+    const desktopSwitch = getByLabelText('PC / Desktop 控制')
+    expect(phoneSwitch).not.toBeDisabled()
+    expect(desktopSwitch).not.toBeDisabled()
+
+    fireEvent.click(phoneSwitch)
+    expect(mockConfig.deviceControlEnabled).toBe(true)
+
+    fireEvent.click(desktopSwitch)
+    expect(mockConfig.desktopControlEnabled).toBe(true)
+
+    // Test save button
+    const saveButton = getByText('保存设置')
+    fireEvent.click(saveButton)
+    expect(mockLocalStorage.setItem).toHaveBeenCalled()
+    expect(mockConfig).toEqual({
+      enabled: true,
+      deviceControlEnabled: true,
+      desktopControlEnabled: true,
+      backend: 'accessibility',
+      approvalMode: 'manual'
+    })
+  })
 })
