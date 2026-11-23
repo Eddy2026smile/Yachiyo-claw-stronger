@@ -147,6 +147,7 @@ const english: Record<string, string> = {
   手动审批: 'Manual approval',
   'AI 预审': 'AI pre-approval',
   完全控制: 'Full control',
+  'PC / Desktop 控制': 'PC / Desktop control',
   无障碍: 'Accessibility',
   'Agent 已启用': 'Agent enabled',
   'Agent 能力未启用': 'Agent disabled',

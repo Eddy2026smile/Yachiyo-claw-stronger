@@ -175,7 +175,8 @@ export function createDesktopMcpServer(
             'adb_shell',
             'adb_install_apk',
             'fastboot_devices',
-            'fastboot_getvar'
+            'fastboot_getvar',
+            'desktop_shell'
           ]
         }))
         return

@@ -298,30 +298,46 @@ export function AgentSessionControls({
         <Stack gap="md">
           <AgentConfigurationPanel showAccessBackend={false} sessionId={sessionId} />
           <section className="yachiyo-agent-config-panel">
-            <Button
-              variant="light"
-              leftSection={<IconUser size={16} />}
-              onClick={() => setCharacterSelectorOpened(true)}
-            >
-              {t('Agent 预设')}: {currentCharacter.name}
-            </Button>
+            <Select
+              label={t('Agent 预设')}
+              value={currentCharacter.id}
+              data={listCharacterProfiles().map(p => ({ value: p.id, label: p.name }))}
+              onChange={(id) => {
+                const profile = listCharacterProfiles().find(p => p.id === id)
+                if (profile) selectSessionCharacter(sessionId, profile)
+              }}
+            />
           </section>
           <section className="yachiyo-agent-config-panel">
             <Switch
               size="md"
               label={t('手机控制')}
-              description={t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')}
+              description={Capacitor.isNativePlatform() 
+                ? t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')
+                : t('可选。开启后允许通过 USB/Wireless ADB 和 Fastboot 控制连接的设备。')}
               checked={deviceControlEnabled}
-              disabled={!Capacitor.isNativePlatform()}
               onChange={(event) => {
                 const checked = event.currentTarget.checked
                 setDeviceControlEnabled(checked)
-                if (checked) {
+                if (checked && Capacitor.isNativePlatform()) {
                   setPhonePermissionOpened(true)
                   void refreshBackend()
                 }
               }}
             />
+            {!Capacitor.isNativePlatform() && (
+              <Switch
+                size="md"
+                label={t('PC / Desktop 控制')}
+                description={t('可选。开启后允许 Agent 执行本地 Mac 命令、文件操作和 ADB/Fastboot 工具。')}
+                checked={config.desktopControlEnabled}
+                onChange={(event) => {
+                  saveAgentSessionConfig(sessionId, {
+                    desktopControlEnabled: event.currentTarget.checked
+                  })
+                }}
+              />
+            )}
             {deviceControlEnabled && (
               <Button variant="light" onClick={() => setPhonePermissionOpened(true)}>
                 {t('手机控制权限与后端')}
