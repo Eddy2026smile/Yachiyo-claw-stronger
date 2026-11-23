@@ -20,6 +20,9 @@ const setActiveCopilot = (id: string) => {
 }
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Capacitor } from '@capacitor/core'
+import { join } from 'node:path'
+import { createDesktopMcpServer } from '@/renderer/desktop/mcp-server'
 import { AdaptiveModal } from '@/components/common/AdaptiveModal'
 import {
   type AgentBackend,
