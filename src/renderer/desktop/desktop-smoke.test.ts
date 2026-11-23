@@ -311,16 +311,16 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
     // Test Agent selector
     const selector = getByLabelText('Agent 预设')
     fireEvent.click(selector)
-    expect(getByText('Default')).toBeInTheDocument()
-    expect(getByText('Custom')).toBeInTheDocument()
-    expect(getByText('Tool Agent')).toBeInTheDocument()
-    expect(getByText('Custom Agent')).toBeInTheDocument()
+    expect(getByText('Default')).toBeTruthy()
+    expect(getByText('Custom')).toBeTruthy()
+    expect(getByText('Tool Agent')).toBeTruthy()
+    expect(getByText('Custom Agent')).toBeTruthy()
 
     // Test control switches
     const phoneSwitch = getByLabelText('手机控制')
     const desktopSwitch = getByLabelText('PC / Desktop 控制')
-    expect(phoneSwitch).not.toBeDisabled()
-    expect(desktopSwitch).not.toBeDisabled()
+    expect((phoneSwitch as HTMLInputElement).disabled).toBe(false)
+    expect((desktopSwitch as HTMLInputElement).disabled).toBe(false)
 
     fireEvent.click(phoneSwitch)
     expect(mockConfig.deviceControlEnabled).toBe(true)
