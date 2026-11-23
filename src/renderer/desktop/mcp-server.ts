@@ -241,20 +241,24 @@ export function createDesktopMcpServer(
               break
             case 'fastboot_devices':
               result = execSync('fastboot devices', { 
-                encoding: 'utf8', 
-                env: { 
-                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH,
-                  ANDROID_HOME: process.env.ANDROID_HOME || ''
-                } 
+                encoding: 'utf8',
+                env: {
+                  ...process.env,
+                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + (process.env.PATH || ''),
+                  ANDROID_HOME: process.env.ANDROID_HOME || '',
+                  ANDROID_SDK_ROOT: process.env.ANDROID_SDK_ROOT || ''
+                }
               })
               break
             case 'fastboot_getvar':
               result = execSync('fastboot getvar all', { 
-                encoding: 'utf8', 
-                env: { 
-                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH,
-                  ANDROID_HOME: process.env.ANDROID_HOME || ''
-                } 
+                encoding: 'utf8',
+                env: {
+                  ...process.env,
+                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + (process.env.PATH || ''),
+                  ANDROID_HOME: process.env.ANDROID_HOME || '',
+                  ANDROID_SDK_ROOT: process.env.ANDROID_SDK_ROOT || ''
+                }
               })
               break
             case 'desktop_shell':
@@ -262,7 +266,8 @@ export function createDesktopMcpServer(
               result = execSync(args[0], { 
                 encoding: 'utf8',
                 env: {
-                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH
+                  ...process.env,
+                  PATH: '/opt/homebrew/bin:/usr/local/bin:' + (process.env.PATH || '')
                 }
               })
               break

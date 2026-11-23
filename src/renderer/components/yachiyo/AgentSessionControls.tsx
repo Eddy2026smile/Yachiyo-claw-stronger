@@ -65,8 +65,7 @@ export function AgentSessionControls({
   const [saving, setSaving] = useState(false)
   const [approvalMode, setApprovalMode] = useState<AgentApprovalMode>(config.approvalMode)
   const [backend, setBackend] = useState<AgentBackend>(config.backend)
-  const [deviceControlEnabled,
-      desktopControlEnabled, setDeviceControlEnabled] = useState(config.deviceControlEnabled)
+  const [deviceControlEnabled, setDeviceControlEnabled] = useState(config.deviceControlEnabled)
   const [desktopControlEnabled, setDesktopControlEnabled] = useState(Boolean((config as any).desktopControlEnabled))
   const [permissionStatus, setPermissionStatus] = useState<DevicePermissionStatus | null>(null)
   const [backendReady, setBackendReady] = useState(false)
@@ -169,7 +168,7 @@ export function AgentSessionControls({
       const next = saveAgentSessionConfig(sessionId, {
         backend,
         deviceControlEnabled,
-      desktopControlEnabled,
+        desktopControlEnabled,
         approvalMode,
         configured: true,
         enabled: pendingEnable || enabled,
@@ -308,6 +307,14 @@ export function AgentSessionControls({
                 const chars = listCharacterProfiles()
                 const seen = new Set(chars.map((c) => c.id))
                 const extras: { value: string; label: string }[] = []
+                
+                // Add built-in Tool Agent
+                extras.push({
+                  value: 'tool-agent',
+                  label: 'Tool Agent'
+                })
+
+                // Add from localStorage presets
                 try {
                   const raw = localStorage.getItem('yachiyo-agent-presets') || localStorage.getItem('copilots') || '[]'
                   const parsed = JSON.parse(raw)
@@ -315,14 +322,25 @@ export function AgentSessionControls({
                     for (const item of parsed) {
                       const id = String(item?.id || item?.name || '')
                       const label = String(item?.name || item?.title || id)
-                      if (id && !seen.has(id)) {
+                      if (id && !seen.has(id) && id !== 'tool-agent') {
                         seen.add(id)
                         extras.push({ value: id, label })
                       }
                     }
                   }
                 } catch {}
-                return [...chars.map((c) => ({ value: c.id, label: c.name })), ...extras]
+
+                return [
+                  ...chars.map((c) => ({ 
+                    value: c.id, 
+                    label: c.name,
+                    group: 'Characters'
+                  })),
+                  ...extras.map(e => ({
+                    ...e,
+                    group: 'Agent Presets'
+                  }))
+                ]
               })()}
               onChange={(id) => {
                 if (!id) return
@@ -363,6 +381,19 @@ export function AgentSessionControls({
                   } as any)
                 }}
               />
+            )}
+            <Switch
+              size="md"
+              label={t('手机控制')}
+              description={t('可选。开启后允许 Agent 通过 ADB 或 Fastboot 控制连接的设备。')}
+              checked={deviceControlEnabled}
+              disabled={Capacitor.isNativePlatform() && !backendReady}
+              onChange={(event) => setDeviceControlEnabled(event.currentTarget.checked)}
+            />
+            {deviceControlEnabled && !Capacitor.isNativePlatform() && (
+              <Alert color="blue" title={t('桌面模式')}>
+                {t('在桌面浏览器中，手机控制将通过本地 ADB/Fastboot 命令实现')}
+              </Alert>
             )}
             {deviceControlEnabled && (
               <Button variant="light" onClick={() => setPhonePermissionOpened(true)}>
