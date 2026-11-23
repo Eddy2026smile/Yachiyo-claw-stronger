@@ -296,12 +296,12 @@ describe('Desktop & Cross-Platform Smoke Checks', () => {
 
     // Render component
     const { getByText, getByLabelText } = render(
-      <AgentSessionControls 
-        sessionId="test-session"
-        enabled={true}
-        onToggle={async () => {}}
-        showStatus={true}
-      />
+      React.createElement(AgentSessionControls, {
+        sessionId: "test-session",
+        enabled: true,
+        onToggle: async () => {},
+        showStatus: true
+      })
     )
 
     // Test Agent selector
