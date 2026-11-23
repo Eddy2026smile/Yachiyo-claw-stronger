@@ -221,6 +221,21 @@ export function createDesktopMcpServer(
               if (!args || !args[0]) throw new Error('Missing APK path')
               result = execSync(`adb install -r "${args[0]}"`, { encoding: 'utf8' })
               break
+            case 'adb_keyevent':
+              if (!args || !args[0]) throw new Error('Missing keycode')
+              execSync(`adb shell input keyevent ${args[0]}`)
+              result = { success: true }
+              break
+            case 'adb_shell':
+              if (!args || !args[0]) throw new Error('Missing command')
+              result = execSync(`adb shell ${args[0]}`, { encoding: 'utf8' })
+              break
+            case 'fastboot_devices':
+              result = execSync('fastboot devices', { encoding: 'utf8', env: { PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH } })
+              break
+            case 'fastboot_getvar':
+              result = execSync('fastboot getvar all', { encoding: 'utf8', env: { PATH: '/opt/homebrew/bin:/usr/local/bin:' + process.env.PATH } })
+              break
             default:
               throw new Error('Unknown tool')
           }
