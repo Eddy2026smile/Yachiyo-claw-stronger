@@ -186,7 +186,12 @@ export function createDesktopMcpServer(
             }
             
             if (config.desktopControlEnabled) {
-              tools.push('desktop_shell')
+              tools.push(
+                'desktop_shell',
+                'desktop_file_read',
+                'desktop_file_write',
+                'desktop_process_list'
+              )
             }
             
             return tools

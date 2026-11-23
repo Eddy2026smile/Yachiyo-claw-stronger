@@ -311,23 +311,16 @@ export function AgentSessionControls({
                   'Agent Presets': []
                 }
 
-                // Add built-in characters
+                // Add built-in characters and Tool Agent
                 chars.forEach(c => {
-                  seen.add(c.id)
-                  groups['Characters'].push({
-                    value: c.id,
-                    label: c.name
-                  })
+                  if (!seen.has(c.id)) {
+                    seen.add(c.id)
+                    groups['Characters'].push({
+                      value: c.id,
+                      label: c.name
+                    })
+                  }
                 })
-
-                // Add built-in Tool Agent
-                if (!seen.has('tool-agent')) {
-                  groups['Agent Presets'].push({
-                    value: 'tool-agent',
-                    label: 'Tool Agent'
-                  })
-                  seen.add('tool-agent')
-                }
 
                 // Add from localStorage presets
                 try {
@@ -339,7 +332,11 @@ export function AgentSessionControls({
                       const label = String(item?.name || item?.title || id)
                       if (id && !seen.has(id)) {
                         seen.add(id)
-                        groups['Agent Presets'].push({ value: id, label })
+                        groups['Agent Presets'].push({ 
+                          value: id, 
+                          label,
+                          prompt: String(item?.systemPrompt || item?.prompt || '')
+                        })
                       }
                     })
                   }
