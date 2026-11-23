@@ -1,5 +1,7 @@
-import { ActionIcon, Alert, Button, SegmentedControl, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
-import { IconAdjustments, IconAlertTriangle, IconBolt, IconShieldLock } from '@tabler/icons-react'
+import { ActionIcon, Alert, Button, Group, Menu, SegmentedControl, Stack, Switch, Text, Title, Tooltip } from '@mantine/core'
+import { IconAdjustments, IconAlertTriangle, IconBolt, IconShieldLock, IconUser } from '@tabler/icons-react'
+import { listCharacterProfiles, getSessionCharacter, selectSessionCharacter } from '@/mobile/character-profiles'
+import { Capacitor } from '@capacitor/core'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AdaptiveModal } from '@/components/common/AdaptiveModal'
@@ -69,6 +71,8 @@ export function AgentSessionControls({
   const [backendDetail, setBackendDetail] = useState('')
   const [authorizing, setAuthorizing] = useState(false)
   const [returnToApp, setReturnToApp] = useState(() => getAgentRuntimeSettings().returnToAppOnComplete)
+  const [characterSelectorOpened, setCharacterSelectorOpened] = useState(false)
+  const currentCharacter = getSessionCharacter(sessionId)
 
   useEffect(() => {
     const next = getAgentSessionConfig(sessionId)
@@ -294,11 +298,21 @@ export function AgentSessionControls({
         <Stack gap="md">
           <AgentConfigurationPanel showAccessBackend={false} sessionId={sessionId} />
           <section className="yachiyo-agent-config-panel">
+            <Button
+              variant="light"
+              leftSection={<IconUser size={16} />}
+              onClick={() => setCharacterSelectorOpened(true)}
+            >
+              {t('Agent 预设')}: {currentCharacter.name}
+            </Button>
+          </section>
+          <section className="yachiyo-agent-config-panel">
             <Switch
               size="md"
               label={t('手机控制')}
               description={t('可选。开启后才允许 Agent 通过 Root、Shizuku 或无障碍观察和操作手机。')}
               checked={deviceControlEnabled}
+              disabled={!Capacitor.isNativePlatform()}
               onChange={(event) => {
                 const checked = event.currentTarget.checked
                 setDeviceControlEnabled(checked)
@@ -364,6 +378,29 @@ export function AgentSessionControls({
               {t('保存设置')}
             </Button>
           </AdaptiveModal.Actions>
+        </Stack>
+      </AdaptiveModal>
+
+      <AdaptiveModal
+        opened={characterSelectorOpened}
+        onClose={() => setCharacterSelectorOpened(false)}
+        title={t('选择 Agent 预设')}
+        centered
+        size="sm"
+      >
+        <Stack gap="xs">
+          {listCharacterProfiles().map((profile) => (
+            <Button
+              key={profile.id}
+              variant={profile.id === currentCharacter.id ? 'filled' : 'light'}
+              onClick={async () => {
+                await selectSessionCharacter(sessionId, profile)
+                setCharacterSelectorOpened(false)
+              }}
+            >
+              {profile.name}
+            </Button>
+          ))}
         </Stack>
       </AdaptiveModal>
 
