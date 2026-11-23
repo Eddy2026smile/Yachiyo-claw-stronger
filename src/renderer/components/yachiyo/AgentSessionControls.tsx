@@ -305,42 +305,49 @@ export function AgentSessionControls({
               value={currentCharacter.id}
               data={(() => {
                 const chars = listCharacterProfiles()
-                const seen = new Set(chars.map((c) => c.id))
-                const extras: { value: string; label: string }[] = []
-                
-                // Add built-in Tool Agent
-                extras.push({
-                  value: 'tool-agent',
-                  label: 'Tool Agent'
+                const seen = new Set<string>()
+                const groups: Record<string, Array<{value: string, label: string}>> = {
+                  'Characters': [],
+                  'Agent Presets': []
+                }
+
+                // Add built-in characters
+                chars.forEach(c => {
+                  seen.add(c.id)
+                  groups['Characters'].push({
+                    value: c.id,
+                    label: c.name
+                  })
                 })
+
+                // Add built-in Tool Agent
+                if (!seen.has('tool-agent')) {
+                  groups['Agent Presets'].push({
+                    value: 'tool-agent',
+                    label: 'Tool Agent'
+                  })
+                  seen.add('tool-agent')
+                }
 
                 // Add from localStorage presets
                 try {
                   const raw = localStorage.getItem('yachiyo-agent-presets') || localStorage.getItem('copilots') || '[]'
                   const parsed = JSON.parse(raw)
                   if (Array.isArray(parsed)) {
-                    for (const item of parsed) {
+                    parsed.forEach(item => {
                       const id = String(item?.id || item?.name || '')
                       const label = String(item?.name || item?.title || id)
-                      if (id && !seen.has(id) && id !== 'tool-agent') {
+                      if (id && !seen.has(id)) {
                         seen.add(id)
-                        extras.push({ value: id, label })
+                        groups['Agent Presets'].push({ value: id, label })
                       }
-                    }
+                    })
                   }
                 } catch {}
 
-                return [
-                  ...chars.map((c) => ({ 
-                    value: c.id, 
-                    label: c.name,
-                    group: 'Characters'
-                  })),
-                  ...extras.map(e => ({
-                    ...e,
-                    group: 'Agent Presets'
-                  }))
-                ]
+                return Object.entries(groups).flatMap(([group, items]) => 
+                  items.map(item => ({ ...item, group }))
+                )
               })()}
               searchable
               clearable
@@ -391,7 +398,7 @@ export function AgentSessionControls({
               label={t('手机控制')}
               description={t('可选。开启后允许 Agent 通过 ADB 或 Fastboot 控制连接的设备。')}
               checked={deviceControlEnabled}
-              disabled={Capacitor.isNativePlatform() && !backendReady}
+              disabled={Capacitor.isNativePlatform() ? !backendReady : false}
               onChange={(event) => setDeviceControlEnabled(event.currentTarget.checked)}
             />
             {deviceControlEnabled && !Capacitor.isNativePlatform() && (

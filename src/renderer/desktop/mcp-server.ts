@@ -164,20 +164,32 @@ export function createDesktopMcpServer(
 
       if (pathname === '/tools/list') {
         res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
-          tools: [
-            'adb_devices', 
-            'adb_screenshot', 
-            'adb_ui_tree', 
-            'adb_tap', 
-            'adb_input_text',
-            'adb_keyevent',
-            'adb_logcat',
-            'adb_shell',
-            'adb_install_apk',
-            'fastboot_devices',
-            'fastboot_getvar',
-            'desktop_shell'
-          ]
+          tools: (() => {
+            const config = getAgentSessionConfig(req.headers['mcp-session-id']?.toString())
+            const tools = []
+            
+            if (config.deviceControlEnabled) {
+              tools.push(
+                'adb_devices',
+                'adb_screenshot',
+                'adb_ui_tree',
+                'adb_tap',
+                'adb_input_text',
+                'adb_keyevent',
+                'adb_logcat',
+                'adb_shell',
+                'adb_install_apk',
+                'fastboot_devices',
+                'fastboot_getvar'
+              )
+            }
+            
+            if (config.desktopControlEnabled) {
+              tools.push('desktop_shell')
+            }
+            
+            return tools
+          })()
         }))
         return
       }
