@@ -1,6 +1,7 @@
 import type { AgentBackend } from './agent-broker'
 import { Capacitor } from '@capacitor/core'
 import { getAgentBackend, setAgentBackend } from './agent-broker'
+import { getAgentRuntimeSettings } from './agent-runtime-settings'
 import { getAgentWorkingDirectory } from './agent-broker'
 
 const CONFIG_KEY = 'yachiyo-agent-session-config-v2'

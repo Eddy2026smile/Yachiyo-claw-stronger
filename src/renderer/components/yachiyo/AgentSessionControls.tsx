@@ -306,7 +306,7 @@ export function AgentSessionControls({
               data={(() => {
                 const chars = listCharacterProfiles()
                 const seen = new Set<string>()
-                const groups: Record<string, Array<{value: string, label: string}>> = {
+                const groups: Record<string, Array<{value: string, label: string, prompt?: string}>> = {
                   'Characters': [],
                   'Agent Presets': []
                 }
